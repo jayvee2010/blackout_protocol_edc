@@ -27,7 +27,7 @@ const AuthenticationScreen: React.FC = () => {
     if (result.success) {
       setStatusMsg('ACCESS GRANTED');
       setTeamId(teamIdInput.toUpperCase());
-      setTimeout(() => setGameState('CRASH_SEQUENCE'), 1500);
+      setTimeout(() => setGameState('ADMIN_START_GATE'), 1500);
     } else {
       setErrorMsg(result.message || 'ERROR');
       setStatusMsg('AUTHENTICATION FAILED');
