@@ -53,16 +53,10 @@ export const UserManualDocument: React.FC = () => {
 
   const handleVerifyFinalCode = (e: React.FormEvent) => {
     e.preventDefault();
-    const clean = enteredCode.trim().toUpperCase();
+    const clean = enteredCode.trim().toLowerCase();
 
-    // Valid codes supported (both aviation and manual event codes)
-    const isValid = clean === 'IEEE-SIT-PASS' || 
-                    clean === 'CIRCUIT-PASS' || 
-                    clean === 'MAYDAY-804' || 
-                    clean === 'BLACKBOX-804' || 
-                    clean === '7700-121-MAYDAY' || 
-                    clean === 'VERIFIED-PASS' ||
-                    clean === 'PASS';
+    // The official secret verification code
+    const isValid = clean === 'g3h8dd9s0g4hb86m';
 
     if (isValid) {
       setCodeError(false);
@@ -75,7 +69,7 @@ export const UserManualDocument: React.FC = () => {
       }, 500);
     } else {
       setCodeError(true);
-      setCodeFeedback('ACCESS REJECTED: Invalid verification code. Request supervisor PASS sign-off or consult Section 30 of the manual (e.g. IEEE-SIT-PASS or MAYDAY-804).');
+      setCodeFeedback('ACCESS REJECTED: Invalid verification code.');
       soundFx.playError();
     }
   };
@@ -300,8 +294,8 @@ export const UserManualDocument: React.FC = () => {
                   type="text"
                   value={enteredCode}
                   onChange={(e) => setEnteredCode(e.target.value)}
-                  placeholder="e.g. IEEE-SIT-PASS or MAYDAY-804"
-                  className="flex-1 bg-black/90 border-2 border-yellow-400/80 rounded-xl px-5 py-3 text-base md:text-lg font-bold text-yellow-300 outline-none focus:border-white tracking-widest uppercase placeholder:text-gray-600"
+                  placeholder="ENTER VERIFICATION CODE"
+                  className="flex-1 bg-black/90 border-2 border-yellow-400/80 rounded-xl px-5 py-3 text-base md:text-lg font-bold text-yellow-300 outline-none focus:border-white tracking-widest placeholder:text-gray-600"
                 />
                 <button
                   type="submit"
