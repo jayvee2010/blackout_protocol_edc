@@ -6,594 +6,275 @@ export interface ManualSection {
 }
 
 export const OFFICIAL_USER_MANUAL_TEXT = `MISSION AI-IMPOSSIBLE
-Technical User Manual & Circuit Troubleshooting Guide
-Organised by: IEEE Student Branch, Symbiosis Institute of Technology, Pune
-Event: SymbiTech – Technical Fest of SIT Pune
-Document Type: Circuit Reference Manual and AI Troubleshooting Knowledge Base
-System: Arduino-Based Electronic Control Unit
-Version: 1.0
+ARDUINO CIRCUIT TROUBLESHOOTING MANUAL
+Participant edition | Circuit 1 and Circuit 2
+A structured, chatbot-readable guide to diagnosing LEDs, push buttons, buzzers, signal wires, and ground connections.
+Symbiosis IEEE Student Branch • Symbiosis Institute of Technology, Pune
 
-PAGE 1 — MISSION BRIEF
-1.1 Background
-A simulated electronic control unit has been recovered from a secured black box. The unit contains an Arduino-compatible microcontroller, an LCD, a servo motor, an LED, a breadboard, and jumper wires.
-The system is not functioning as expected. Participants must inspect the circuit, identify the faults, consult the technical documentation, and restore normal operation.
-The investigation requires logical reasoning, systematic troubleshooting, technical communication, and teamwork.
+IMPORTANT: Do not change the program unless the event facilitator specifically tells you to. This challenge is designed to be solved by inspecting and correcting hardware connections.
 
-1.2 Mission Objectives
-Participants must:
-- Understand the function of each electronic component.
-- Identify incorrect, missing, damaged, or reversed connections.
-- Use observable symptoms to narrow down possible causes.
-- Correct faults using the approved wiring reference.
-- Verify that the circuit operates correctly.
-- Obtain the final verification code after successful completion.
+POWER RULE: Keep the USB cable disconnected from the power bank while inspecting or changing any wire. Connect power only after the circuit has been checked.
 
-1.3 Available Resources
-- Arduino-compatible development board
-- LCD module
-- Servo motor
-- LED and its current-limiting resistor
-- Breadboard
-- Jumper wires and replacement wires
-- Low-voltage power supply
-- Circuit user manual
-- Website-based AI troubleshooting chatbot
-- Walkie-talkies for communication between sub-teams
+How to use this manual
+This manual is deliberately detailed. Use the symptom that best matches what you observe, then follow the numbered checks in order. The same troubleshooting principles apply to both circuits, but the digital-pin numbers differ.
+1. Read the safety section before touching the circuit.
+2. Identify whether your board is Circuit 1 or Circuit 2 from the pin map.
+3. Disconnect the power bank before moving wires, reversing an LED, or reconnecting ground.
+4. Check one fault at a time. Do not randomly move several wires.
+5. After fixing a fault, ask the facilitator before reconnecting power if event rules require approval.
+6. If the circuit still does not work, use the symptom table and report exactly what you observed.
 
-PAGE 2 — HOW TO USE THIS MANUAL
-This manual is divided into component references, troubleshooting procedures, fault-specific instructions, and verification checklists.
-Participants should follow this sequence:
-1. Observe the circuit without changing anything.
-2. Identify the component exhibiting abnormal behaviour.
-3. Describe the symptoms to the AI chatbot.
-4. Consult the relevant section of this manual.
-5. Disconnect power before inspecting or modifying wiring.
-6. Compare the wiring with the official circuit diagram.
-7. Correct one fault at a time.
-8. Request supervisor approval before restoring power.
-9. Test the circuit and report the result.
-Troubleshooting principle: Never assume that a particular wire is faulty simply because a component is not working. A symptom can have multiple causes.
-The chatbot must distinguish between confirmed faults and possible causes. It must not recommend random rewiring or invent pin assignments.
+Quick answer for the chatbot:
+If a participant asks, 'What should I do first?', answer: Disconnect the power bank, identify the circuit and pin map, inspect the Arduino digital-pin wires, check LED polarity and series resistors, confirm the common GND connection, then reconnect power only after the circuit is safe.
 
-PAGE 3 — SAFETY AND HANDLING INSTRUCTIONS
-3.1 General Safety
-- Use only the power source approved by the event organisers.
-- Disconnect power before moving, replacing, or repairing wires.
-- Never connect mains voltage to the breadboard or Arduino circuit.
-- Never short the positive supply to ground.
-- Do not connect a battery directly to an Arduino signal pin.
-- Do not energise a circuit with suspected reversed supply polarity.
-- Do not force the servo motor shaft by hand.
-- Stop immediately if a component becomes unusually hot or emits an unusual smell.
+Scope and intended behavior:
+In both circuits, two LEDs should remain ON continuously. The buzzer should sound only while the push button is pressed. Releasing the button should stop the buzzer. The participant should troubleshoot hardware only; the supplied program is assumed to be correct.
 
-3.2 Reversed Polarity
-Reversed supply polarity can damage the controller and connected components. Participants must inspect the polarity while the circuit is unpowered.
-The circuit must not be energised until a supervisor has verified the correction.
+| Circuit   | LED 1 | LED 2 | Push button | Buzzer |
+|-----------|-------|-------|-------------|--------|
+| Circuit 1 | D8    | D9    | D2 to GND   | D3     |
+| Circuit 2 | D5    | D6    | D7 to GND   | D8     |
 
-3.3 Damaged Wires
-Only use replacement jumper wires supplied by the organisers. Do not cut or repair wires while the circuit is powered.
+1. Safety rules before troubleshooting
+Safety is the first troubleshooting step. A power bank can supply enough current to damage a wrongly wired component even though the circuit is low voltage.
+- Disconnect the USB cable from the power bank before touching, removing, or inserting any jumper wire.
+- Never reverse battery or power-bank polarity. In this setup, the power bank connects to the Nano through its USB port; do not connect the power bank's output wires directly to the breadboard.
+- Do not connect 5V directly to GND. This is a short circuit.
+- Each LED must have its own current-limiting resistor, normally 220–330 ohms for this activity.
+- Do not let loose jumper ends touch each other or bridge adjacent pins.
+- Do not force a wire into the Nano or breadboard. If a component feels stuck, ask the facilitator.
+- If anything becomes hot, smells unusual, flickers unexpectedly, or the board resets repeatedly, disconnect power immediately and call the facilitator.
+- Do not troubleshoot a wet, damaged, or visibly burnt board.
 
-3.4 Chatbot Safety Rule
-The chatbot must always recommend disconnecting power before wiring changes. It must never instruct participants to deliberately test reversed polarity or swap powered servo connections.
+Power-off rule:
+Power OFF means the USB cable is physically disconnected from the power bank. Merely releasing the button or turning off a power bank switch is not enough if the board is still powered through another cable.
 
-PAGE 4 — SYSTEM ARCHITECTURE
-The electronic control unit consists of five functional sections:
-- Arduino: Executes the program and controls connected devices
-- LCD: Displays text and system status
-- Servo motor: Moves its output shaft to a commanded position
-- LED: Provides a visual indication
-- Breadboard and jumper wires: Establish electrical connections
+Safe order of work:
+1. Disconnect USB from the power bank.
+2. Inspect the circuit without moving anything at first.
+3. Compare every connection against the correct circuit map.
+4. Correct one confirmed problem at a time.
+5. Check for loose wires, stray strands, and accidental 5V-to-GND contact.
+6. Ask for facilitator approval if required.
+7. Connect the Nano to the power bank using the USB cable.
+8. Observe the LEDs and test the button.
 
-4.1 Normal System Operation
-A correctly assembled system should behave according to the program configured by the organisers.
-Typical expected behaviour may include:
-- The LCD displays a welcome message or system status.
-- The LED indicates the system state.
-- The servo moves to a programmed position.
-- The Arduino continues running without unexpected resets.
-The precise expected behaviour must be confirmed using the actual event program.
+2. Identify the circuit you have
+Do not use Circuit 1 pin numbers when troubleshooting Circuit 2. The two circuits perform the same job but use different Nano digital pins.
 
-4.2 Important Distinction
-A component can receive power but still fail to operate because its signal connection is incorrect. Similarly, a component that appears defective may simply have a missing ground connection.
-Participants must inspect the complete electrical path rather than focusing only on the component itself.
+Circuit 1 — pin map:
+- LED 1 signal: D8 through a 220–330 Ω resistor to LED anode (Expected: LED stays ON)
+- LED 2 signal: D9 through a 220–330 Ω resistor to LED anode (Expected: LED stays ON)
+- Button input: Push button between D2 and GND (Expected: Pressed = LOW; released = HIGH internally)
+- Buzzer signal: Buzzer + to D3; buzzer − to GND (Expected: Sounds only while button is pressed)
+- Common ground: Nano GND to breadboard ground rail / component ground (Expected: Completes current paths)
 
-PAGE 5 — ARDUINO MICROCONTROLLER REFERENCE
-5.1 Purpose
-The Arduino-compatible development board is the central controller. It executes the program and communicates with the LCD, LED, and servo motor.
+Circuit 2 — pin map:
+- LED 1 signal: D5 through a 220–330 Ω resistor to LED anode (Expected: LED stays ON)
+- LED 2 signal: D6 through a 220–330 Ω resistor to LED anode (Expected: LED stays ON)
+- Button input: Push button between D7 and GND (Expected: Pressed = LOW; released = HIGH internally)
+- Buzzer signal: Buzzer + to D8; buzzer − to GND (Expected: Sounds only while button is pressed)
+- Common ground: Nano GND to breadboard ground rail / component ground (Expected: Completes current paths)
 
-5.2 Common Arduino Uno-Style Connections
-An Uno-style board commonly provides:
-- Digital pins D0–D13
-- Analogue inputs A0–A5
-- Regulated 5 V and GND connections
-- A USB programming and power interface
-- A reset button
-The actual board model must be verified before using these details.
+Important: Circuit 2 uses D8 for the buzzer. Circuit 1 uses D8 for LED 1. Always identify the circuit before deciding whether a D8 connection is correct.
 
-5.3 Common Causes of Failure
-- Missing power or ground
-- Incorrect signal pin assignment
-- Loose connections
-- Incorrect breadboard placement
-- An unstable power source
-- A program that uses different pins from the physical wiring
+3. Understand the basic parts
+- Arduino Nano: The controller. Its digital pins provide signals to the LEDs and buzzer and read the push button. The board also needs a shared ground path for the circuit to behave predictably.
+- Digital pin: A numbered connection such as D2, D3, D5, D6, D7, D8, or D9. A jumper wire that is disconnected from the required pin leaves that part of the circuit without its intended signal.
+- LED and polarity: An LED is a light-emitting diode, allowing current to flow in one direction. The longer leg is usually the anode (+); the shorter leg is usually the cathode (−). The flat edge on the LED body usually marks the cathode. If reversed, it may not light even when the signal and resistor are correct.
+- Resistor: In series with each LED limits current (220–330 Ω). Do not remove or bypass it.
+- Push button: Wired between assigned digital pin and GND using INPUT_PULLUP (reads HIGH when released, LOW when pressed).
+- Buzzer: Active buzzer compatible with Arduino output. Positive terminal connects to assigned digital pin; negative terminal to GND.
+- Ground (GND): The common reference and return path. A ground rail is useful only if connected to a Nano GND pin.
 
-5.4 Diagnostic Procedure
-1. Identify the exact board model.
-2. Locate its power and ground connections.
-3. Compare connected wires with the approved wiring diagram.
-4. Identify which pins the program uses for the LCD, LED, and servo.
-5. Inspect connections while power is disconnected.
-Chatbot rule: Never assume that a component is connected to a particular Arduino pin unless the official circuit configuration confirms it.
+4. Understand the expected behavior
+| Situation | LED 1 | LED 2 | Buzzer |
+|-----------|-------|-------|--------|
+| Power connected; button released | ON | ON | OFF |
+| Power connected; button pressed  | ON | ON | ON  |
+| Button released again            | ON | ON | OFF |
+| USB disconnected                 | OFF| OFF| OFF |
 
-PAGE 6 — OFFICIAL CIRCUIT CONFIGURATION
-This page must be completed by the event organisers before the chatbot is deployed.
-The chatbot must treat this page as the authoritative reference for the actual circuit.
+The LEDs are not meant to blink. They should remain on while the Nano is powered. The buzzer is the only part controlled by the button.
 
-6.1 Hardware Identification
-- Arduino board model: [ENTER MODEL]
-- LCD model: [ENTER MODEL]
-- LCD interface: [PARALLEL / I²C]
-- Servo model: [ENTER MODEL]
-- LED control pin: [ENTER PIN]
-- Servo signal pin: [ENTER PIN]
-- Approved supply: [ENTER TYPE AND VOLTAGE]
-- External servo supply used?: [YES / NO]
+5. Troubleshooting decision tree
+- Is USB disconnected from the power bank before handling wires? If no, disconnect it first.
+- Are both LEDs off? Check common GND, both LED polarities, resistors, and the two LED signal wires.
+- Is only one LED off? Check that LED's assigned digital-pin wire, resistor, polarity, and breadboard row.
+- Are both LEDs on but buzzer does not sound when pressed? Check button signal wire, button placement, buzzer signal wire, buzzer polarity, and ground.
+- Does buzzer sound without pressing button? Check whether button is stuck, misplaced, or permanently connecting the signal pin to GND.
+- Does nothing work or board resets? Disconnect power immediately, inspect for short circuit or loose power/ground wiring, and call facilitator.
 
-6.2 Wiring Reference
-- Arduino ground: [ENTER CONNECTION]
-- LCD power: [ENTER CONNECTION]
-- LCD ground: [ENTER CONNECTION]
-- LCD contrast: [ENTER CONNECTION]
-- LCD control/data pins: [ENTER PIN MAP]
-- LCD backlight: [ENTER CONNECTION]
-- Servo ground: [ENTER CONNECTION]
-- Servo power: [ENTER CONNECTION]
-- Servo signal: [ENTER PIN]
-- LED anode through resistor: [ENTER CONNECTION]
-- LED cathode: [ENTER CONNECTION]
+6. Fault type A — Digital-pin wire disconnected
+- Circuit 1 pins: LED 1 = D8, LED 2 = D9, Button = D2, Buzzer = D3.
+- Circuit 2 pins: LED 1 = D5, LED 2 = D6, Button = D7, Buzzer = D8.
+- Repair: Disconnect USB power. Locate component. Reconnect jumper to documented pin socket and row. Reconnect power after verification.
 
-6.3 Critical Instruction
-Do not publish this manual to the chatbot with these fields left ambiguous if you expect the chatbot to identify exact wires.
-Without the actual pin map, the chatbot can explain general troubleshooting methods but cannot reliably identify the precise connection that a participant must move.
+7. Fault type B — LED reversed
+- Anode (+) = longer leg; Cathode (−) = shorter leg / flat edge.
+- Repair: Disconnect USB power. Rotate LED so anode faces signal/resistor and cathode faces GND. Never remove or bypass series resistor.
 
-PAGE 7 — LCD MODULE REFERENCE
-7.1 Function
-An LCD, or Liquid Crystal Display, presents information generated by the controller.
-A common character LCD has 16 columns and 2 rows, allowing up to 32 character positions.
+8. Fault type C — Ground connection disconnected
+- Symptoms: Both LEDs off, button fails, buzzer fails, or multi-component failure.
+- Repair: Disconnect USB power. Follow jumper from Nano GND to breadboard ground rail. Ensure all component grounds return to Nano GND. Never connect 5V to GND!
 
-7.2 Common Parallel LCD Pins
-- VSS: Ground
-- VDD: Supply
-- V0: Contrast adjustment
-- RS: Selects command or data mode
-- R/W: Read/write control
-- E: Enable signal
-- D0–D7: Data lines
-- LED+ / A: Backlight positive
-- LED− / K: Backlight negative
-Some modules use different labels.
+9. Fault type D — Combined or partial faults
+- Tackle independent faults one at a time.
+- Power off before any change. Verify circuit after each step.
 
-7.3 I²C LCD Modules
-An LCD with an I²C adapter may expose only four connections: VCC, GND, SDA, and SCL.
-The correct interface must be identified before troubleshooting.
+10. Circuit 1 detailed wiring reference
+- LED 1: Nano D8 through 220–330 Ω resistor to LED anode; cathode to GND.
+- LED 2: Nano D9 through 220–330 Ω resistor to LED anode; cathode to GND.
+- Push button: One side to Nano D2, other side to GND (INPUT_PULLUP).
+- Active buzzer: Positive (+) to Nano D3, negative (−) to GND.
+- Ground reference: Nano GND to ground rail.
 
-7.4 Important Diagnostic Principle
-A lit LCD backlight does not guarantee that the display is correctly connected or initialised.
-The backlight, contrast circuit, control signals, data connections, and software configuration must be considered separately.
+11. Circuit 2 detailed wiring reference
+- LED 1: Nano D5 through 220–330 Ω resistor to LED anode; cathode to GND.
+- LED 2: Nano D6 through 220–330 Ω resistor to LED anode; cathode to GND.
+- Push button: One side to Nano D7, other side to GND (INPUT_PULLUP).
+- Active buzzer: Positive (+) to Nano D8, negative (−) to GND.
+- Ground reference: Nano GND to ground rail.
 
-PAGE 8 — LCD BRIGHTNESS AND CONTRAST
-8.1 Backlight Brightness
-The backlight illuminates the display surface. If the screen appears excessively bright or dim, the relevant checks depend on the module design.
-Possible causes include:
-- An incorrect backlight connection
-- A missing or incorrect current-limiting resistor
-- A faulty backlight driver
-- An incorrect PWM control setting, if used
-Some LCD modules have a fixed backlight and no software brightness adjustment.
+12. Power bank connection procedure
+- Inspect while disconnected.
+- Plug USB cable from power bank into Nano only when wiring is confirmed.
+- Verify: Both LEDs ON, buzzer silent when button released, sounds when pressed.
 
-8.2 Contrast
-Contrast determines how clearly the characters appear against the background.
-Many character LCD modules use a contrast input connected to a potentiometer.
-Incorrect contrast may produce a blank-looking display or dark blocks even when the backlight is operating.
+13. Symptoms and likely causes summary
+- Both LEDs off, buzzer works: LED pin wires, polarities, resistors, or local LED ground.
+- Only LED 1 off: LED 1 pin wire, polarity, resistor, or row.
+- Buzzer never sounds: Button wire/placement, buzzer signal wire, buzzer polarity, or ground.
+- Buzzer always sounds: Button stuck, miswired, or permanently grounded.
+- Board resets / heats up: Short circuit! Disconnect power immediately and call facilitator.
 
-8.3 Diagnostic Comparison
-- Backlight too dim: Inspect the backlight supply and its control circuit
-- Backlight too bright: Inspect the backlight control and specified current-limiting arrangement
-- Backlight on, no readable text: Check contrast, control/data wiring, and initialisation
-- Dark blocks on the screen: Check contrast and LCD initialisation
-- Random characters: Check data connections and supply stability
-Do not confuse backlight brightness with character contrast. They are different functions and require different diagnostic checks.
+14. Breadboard inspection & button placement
+- 4-leg tactile buttons often have paired pins; straddle centre trench so pressing connects intended sides.
+- Do not trust rail colours blindly; trace wire path to Nano GND.
 
-PAGE 9 — LCD TROUBLESHOOTING PROCEDURE
-Symptom A: LCD Backlight Is Too Dim
-1. Disconnect power.
-2. Inspect the backlight connections.
-3. Compare the wiring with the official circuit diagram.
-4. Check whether the module uses a resistor, driver, or PWM control.
-5. Correct only a confirmed wiring or configuration problem.
-6. Request supervisor approval before testing.
-
-Symptom B: LCD Backlight Is Too Bright
-1. Disconnect power.
-2. Identify the circuit used to control the backlight.
-3. Inspect the relevant resistor or driver arrangement.
-4. If PWM control is used, ask the Lab Team to verify the intended control setting.
-5. Do not bypass a required resistor.
-
-Symptom C: Backlight Is On but Text Is Missing
-1. Check the contrast adjustment.
-2. Inspect the LCD power and ground.
-3. Verify the control and data wires.
-4. Ask the Lab Team to confirm the program’s pin assignments.
-5. Test again after an authorised correction.
-
-Symptom D: Random Characters
-Inspect loose wires, incorrect data-pin connections, common ground, and supply stability.
-
-PAGE 10 — SERVO MOTOR REFERENCE
-10.1 Function
-A hobby servo is an actuator that moves its output shaft to a commanded position.
-A typical positional servo contains a motor, gears, control electronics, and a position-feedback mechanism.
-
-10.2 Common Three-Wire Configuration
-A hobby servo commonly has:
-- Ground
-- Supply voltage
-- Control signal
-Wire colours are not universal. Verify the actual model and documentation.
-
-10.3 Indicative SG90-Class Characteristics
-- Type: Positional micro servo
-- Connections: Power, ground, signal
-- Control: Timed electrical pulses
-- Nominal movement: Often approximately 0–180°, model-dependent
-- Common supply range: Often approximately 4.8–6 V, subject to the specific model
-- Current demand: Varies with load and can rise substantially during movement or stall
-These values are indicative, not guaranteed specifications. The datasheet for the actual servo takes precedence.
-
-10.4 Handling Precautions
-Do not force the shaft, block the mechanism, or leave a stalled servo powered.
-If the servo becomes hot, buzzes continuously, or causes the controller to reset, disconnect power and investigate the cause.
-
-PAGE 11 — SERVO WIRING AND CONTROL
-11.1 Power Connection
-The servo supply must match the requirements of the actual motor.
-A servo can draw brief current peaks that exceed what an Arduino board's onboard regulator can safely provide.
-Follow the approved event wiring arrangement. If a separate servo supply is used, connect the grounds as specified by the circuit design.
-
-11.2 Signal Connection
-The signal lead must connect to the Arduino pin specified by the program.
-A physically connected signal wire may still be incorrect if it is connected to the wrong pin.
-
-11.3 Servo Does Not Move
-Possible causes: Missing power, Missing ground, Incorrect signal connection, Incorrect program pin assignment, Mechanical obstruction, Unstable supply.
-
-11.4 Servo Moves Erratically
-Possible causes: Loose signal wire, Missing common ground, Incorrect supply arrangement, Unstable control signal, A mechanical problem.
-The chatbot must not instruct participants to randomly swap servo wires to test possible arrangements.
-
-PAGE 12 — SERVO TROUBLESHOOTING PROCEDURE
-Symptom A: No Movement
-1. Disconnect power.
-2. Identify the servo model and its connection labels.
-3. Compare the power, ground, and signal connections with the official wiring map.
-4. Check whether the signal lead reaches the programmed pin.
-5. Check for mechanical obstruction.
-6. Obtain supervisor approval before restoring power.
-
-Symptom B: Unpredictable Movement
-1. Disconnect power.
-2. Inspect the signal connection.
-3. Verify the common ground arrangement.
-4. Ask the Lab Team to check the expected servo command.
-5. Inspect the power arrangement if other components also behave abnormally.
-
-Symptom C: Servo Buzzes or Becomes Hot
-Disconnect power immediately. Check for a blocked mechanism. Verify the supply and wiring against the approved reference. Do not repeatedly energise the servo to reproduce the fault.
-
-Symptom D: Controller Resets During Movement
-Stop testing and report the symptom. A supply-current problem or poor connection may be responsible.
-
-PAGE 13 — LED INDICATOR REFERENCE
-13.1 Function
-An LED (Light-Emitting Diode) produces light when current flows through it in the correct direction. It may indicate system status, an event state, or a programmed output.
-
-13.2 Polarity
-- Anode: positive side (often longer lead)
-- Cathode: negative side (often flat edge on package)
-These clues may be unavailable if leads have been trimmed.
-
-13.3 Current-Limiting Resistor
-An LED normally requires a series current-limiting resistor. The event circuit should already contain the appropriate resistor. Never bypass the resistor or connect an LED directly across the supply without suitable current limiting.
-
-13.4 LED Does Not Illuminate
-Check: LED polarity, Presence and placement of the resistor, Ground connection, Control pin assignment, Programmed output state.
-
-PAGE 14 — BREADBOARD AND JUMPER WIRES
-14.1 Breadboard Layout
-A solderless breadboard contains internal metal contacts that connect specific groups of holes: terminal strips, a central separation channel, and power rails along the sides. Some power rails are interrupted midway.
-
-14.2 Common Wiring Errors
-- Wire inserted into the wrong row
-- Wire placed on opposite side of central channel
-- Power rail assumed to be continuous when it is not
-- Jumper inserted loosely
-- Signal wire connected to neighbouring pin
-- Wire disconnected from one endpoint
-
-14.3 Inspection Method
-Disconnect power. Identify start and destination. Trace against official diagram. Check exact breadboard row. Correct only when intended path is known.
-
-PAGE 15 — FAULT F01: LCD BRIGHTNESS INCORRECT
-Component: LCD | Category: Display or backlight fault
-Possible Symptoms: LCD backlight is excessively bright or dim, text difficult to read, display appears blank despite illumination.
-Diagnostic Questions to ask: Is backlight too bright or too dim? Can you see any characters? Is the problem limited to the LCD? Has contrast control been adjusted?
-Corrective Procedure: Disconnect power. Identify if fault is backlight brightness or character contrast. Inspect circuit using official wiring map. Check resistor, driver, or control connection. Correct only confirmed fault. Obtain supervisor approval before restoring power. Verify display.
-Rule: Changing contrast does not necessarily correct a backlight brightness problem.
-
-PAGE 16 — FAULT F02: MISPLACED WIRES
-Category: Incorrect connection
-Definition: A misplaced wire is connected to the wrong pin, breadboard row, or power rail.
-Possible Symptoms: LCD text missing or garbled, servo does not move, LED behaves incorrectly, several components malfunction, short circuit.
-Corrective Procedure: Disconnect power. Identify affected component. Determine correct source and destination. Compare with official diagram. Inspect row and power-rail layout. Move only confirmed misplaced wire. Request supervisor verification. Test affected component.
-Rule: Chatbot must never state "move wire to D9" or another specific pin unless approved configuration confirms that destination.
-
-PAGE 17 — FAULT F03: REVERSED POWER POLARITY
-Category: Power supply fault
-Definition: Supply polarity is reversed when positive and negative connections are swapped.
-Risk: Reverse polarity can damage Arduino, LCD, servo, and other components.
-Safe Diagnostic Procedure: Do not energise circuit. Disconnect power source. Read polarity markings on supply. Trace supply connections against approved diagram. Correct polarity while unpowered. Request supervisor verification. Restore power only after approval.
-Prohibited: Do not power circuit to see if polarity is correct. Do not use trial and error. If circuit was already energised with reversed polarity, disconnect immediately and report to supervisor.
-
-PAGE 18 — FAULT F04: SERVO WIRES SWAPPED
-Component: Servo motor | Category: Incorrect wiring
-Definition: Servo power, ground, or signal leads connected to incorrect points.
-Possible Symptoms: Servo does not move or behaves unpredictably, Arduino resets, component becomes hot, continuous buzzing.
-Corrective Procedure: Disconnect power immediately. Identify exact servo model. Determine leads from documentation. Trace intended connections using official map. Correct error. Request supervisor verification. Restore power only when authorised.
-Critical Safety Rule: Never swap servo leads while powered. Never connect supply lead to a signal pin. Wire colours alone are insufficient to confirm connection.
-
-PAGE 19 — FAULT F05: DISCONNECTED WIRES
-Category: Open circuit
-Definition: A disconnected wire interrupts the intended electrical path.
-Possible Symptoms: Component stops working, circuit works intermittently, servo loses power/signal, LCD becomes blank, LED off.
-Corrective Procedure: Disconnect power. Identify malfunctioning component. Inspect connections for loose/missing endpoint. Compare path with official diagram. Reconnect to correct points. Verify ends are secure. Request supervisor approval.
-
-PAGE 20 — FAULT F06: CUT JUMPER WIRES
-Category: Deliberate open circuit
-Definition: A jumper wire has been intentionally cut, interrupting electrical path. Replacement jumpers are supplied.
-Corrective Procedure: Disconnect power. Identify affected component. Trace damaged wire's original endpoints using official wiring diagram. Select replacement jumper. Connect between original intended endpoints. Check routing. Request supervisor approval before testing.
-Chatbot Rule: If original endpoints cannot be identified, chatbot must ask participant to provide location or consult wiring map. Never invent connections.
-
-PAGE 21 — POWER AND GROUND DIAGNOSTICS
-21.1 Common Symptoms:
-- Several components fail together: Shared power or ground problem
-- Servo movement causes resets: Supply instability or excessive current demand
-- LCD backlight works but text does not: Contrast, data/control, or initialisation issue
-- Circuit works intermittently: Loose or disconnected connection
-- Component becomes hot: Incorrect wiring, overload, or component damage
-Inspection Sequence: Disconnect power. Confirm approved supply. Inspect polarity. Inspect ground path and power-rail continuity. Check signal connections. Obtain supervisor verification before restoring power.
-
-PAGE 22 — SYSTEMATIC DEBUGGING METHOD
-Step 1: Observe (record what is happening)
-Step 2: Identify the Scope (one vs multiple components)
-Step 3: Isolate Circuit (disconnect power before inspecting wiring)
-Step 4: Consult Reference (wiring map and component docs)
-Step 5: Form a Hypothesis (based on observed evidence)
-Step 6: Correct One Fault at a time
-Step 7: Verify (restore power ONLY after supervisor approves)
-Step 8: Record the Result
-Step 9: Communicate (share with other sub-team)
-Golden Rule: Every correction must be supported by wiring reference or confirmed fault.
-
-PAGE 23 — LCD DIAGNOSTIC DECISION TREE
-- No backlight: Investigate backlight supply, connection, polarity, resistor/driver.
-- Backlight on, blank screen: Investigate contrast, supply/ground, control/data wiring, initialisation.
-- Dark blocks: Check contrast adjustment and LCD initialisation.
-- Text faint: Determine if backlight brightness or contrast issue.
-- Random characters: Inspect data wiring, loose connections, ground, supply stability.
-- Display changes when wires moved: Suspect loose/disconnected connection. Disconnect power first.
-
-PAGE 24 — SERVO DIAGNOSTIC DECISION TREE
-- Does not move: Check approved power, ground, signal pin, program configuration, mechanical obstruction.
-- Twitches or jitters: Inspect signal connection, ground reference, supply stability.
-- Causes Arduino to reset: Stop testing, report power/ground issue.
-- Moves unexpectedly: Verify commanded position, configured signal pin, mechanical setup.
-- Buzzes continuously / hot: Disconnect power immediately. Inspect for blocked mechanism or incorrect wiring.
-- Wires appear swapped: Do not test by trial and error. Identify leads using documentation and wiring diagram.
-
-PAGE 25 & 26 — AVIATION BLACK BOX REFERENCE & PRINCIPLES
-- Flight Data Recorder (FDR) & Cockpit Voice Recorder (CVR) assist investigators in reconstructing events.
-- Typically painted high-visibility orange.
-- In Mission AI-Impossible, the locked steel box is a fictional prop inspired by flight recorders. The circuit represents an electronic control unit under investigation.
-- Evidence-Based Diagnosis: Observation -> Hypothesis -> Safe Test -> Result -> Conclusion.
-- Team communication via walkie-talkie: Component, symptom, checks completed, pin/wire info, specific question for other team.
-
-PAGE 27 — TECHNICAL GLOSSARY
-- Arduino, Breadboard, Common ground, Contrast, DC, GPIO, GND, LCD, LED, Open circuit, Polarity, PWM, Servo, Signal wire, Short circuit, Datasheet, FDR, CVR, Fault isolation, Verification.
-
-PAGE 28 & 29 — FAULT REPORT & FINAL VERIFICATION
-Final circuit verification checks with supervisor:
-- Supply type and polarity verified, power/ground match diagram, misplaced/disconnected/cut wires resolved, servo leads verified, no shorts.
-- LCD backlight, contrast, and display operating.
-- LED operating with current-limiting resistor.
-- Servo responding without abnormal heat/buzzing.
-- Final status: PASS / NEEDS REVIEW. Final verification code obtained and submitted on website.
-
-PAGE 30 — AI CHATBOT KNOWLEDGE BASE AND RESPONSE RULES
-30.1 Role: Circuit-troubleshooting assistant for Mission AI-Impossible. Helps diagnose symptoms and correct faults using approved configuration.
-30.2 Supported Fault Categories: F01 (LCD Brightness/Contrast), F02 (Misplaced Wire), F03 (Reversed Power Polarity), F04 (Servo Wires Swapped), F05 (Disconnected Wire), F06 (Cut Jumper Wire).
-30.3 Required Response Structure:
-1. Likely issue (brief, cautious)
-2. Confirm the symptom (short clarifying question if needed)
-3. Safety instruction (ALWAYS disconnect power before inspecting/changing wiring)
-4. Diagnostic steps (numbered, in order)
-5. Corrective action (using official wiring reference)
-6. Verification (check after supervisor approves restoring power)
-7. Escalation (direct to Lab Team or event supervisor if pin map missing or unresolved)
-30.4 Strict Rules:
-- Source of truth is this manual and official circuit configuration.
-- Never invent pin assignments, never guess wire colours.
-- Never instruct to energise reversed polarity or swap powered servo connections.
-- Never recommend bypassing an LED resistor.
-- Do not answer anything out of scope of this manual.`;
+15. Participant checklist & final functional test
+- Pass criteria: Both LEDs ON continuously; buzzer silent released, active pressed; no heating or resets.
+- Enter secret supervisor verification code once complete to stop mission clock.`;
 
 export const OFFICIAL_USER_MANUAL_SECTIONS: ManualSection[] = [
   {
-    id: 'brief',
-    title: 'PAGES 1-4: MISSION BRIEF & ARCHITECTURE',
-    subtitle: 'System Overview, Objectives & Safety Rules',
-    content: `MISSION AI-IMPOSSIBLE — TECHNICAL USER MANUAL & CIRCUIT TROUBLESHOOTING GUIDE
-Organised by: IEEE Student Branch, Symbiosis Institute of Technology (SIT), Pune
-Event: SymbiTech – Technical Fest of SIT Pune
-System: Arduino-Based Electronic Control Unit | Version: 1.0
+    id: 'overview',
+    title: 'SECTIONS 1–4: OVERVIEW & PIN MAPS',
+    subtitle: 'Participant Edition | Circuit 1 & Circuit 2 Specifications',
+    content: `MISSION AI-IMPOSSIBLE: ARDUINO CIRCUIT TROUBLESHOOTING MANUAL
+Symbiosis IEEE Student Branch • Symbiosis Institute of Technology, Pune
 
-1. MISSION BRIEF & OBJECTIVES
-A simulated electronic control unit has been recovered from a secured black box. The unit contains an Arduino-compatible microcontroller, an LCD, a servo motor, an LED, a breadboard, and jumper wires.
-The system is not functioning as expected. Participants must inspect the circuit, identify the faults, consult the technical documentation, and restore normal operation.
+SCOPE & INTENDED BEHAVIOR:
+In both circuits, two LEDs should remain ON continuously. The buzzer should sound only while the push button is pressed. Releasing the button should stop the buzzer. The participant should troubleshoot hardware only; the supplied program is assumed to be correct.
 
-Objectives:
-- Understand component functions (Arduino, LCD, Servo, LED, Breadboard).
-- Identify incorrect, missing, damaged, or reversed connections.
-- Use observable symptoms to systematically narrow down causes.
-- Correct faults using the approved wiring reference.
-- Verify circuit operation and obtain final verification code.
+PIN SPECIFICATION MAP:
+| Circuit   | LED 1 | LED 2 | Push Button | Buzzer |
+|-----------|-------|-------|-------------|--------|
+| Circuit 1 | D8    | D9    | D2 to GND   | D3     |
+| Circuit 2 | D5    | D6    | D7 to GND   | D8     |
 
-2. SEQUENCE OF TROUBLESHOOTING
-1. Observe the circuit without changing anything.
-2. Identify the component exhibiting abnormal behaviour.
-3. Describe the symptoms to the AI chatbot.
-4. Consult relevant section of this manual.
-5. Disconnect power before inspecting or modifying wiring.
-6. Compare wiring with official circuit diagram.
-7. Correct one fault at a time.
-8. Request supervisor approval before restoring power.
-9. Test circuit and report result.
-
-3. CRITICAL SAFETY INSTRUCTIONS
-- Use only power sources approved by event organisers.
-- ALWAYS disconnect power before moving, replacing, or repairing wires.
-- Never connect mains voltage to the breadboard or Arduino circuit.
-- Never short positive supply to ground.
-- Do not energise a circuit with suspected reversed supply polarity.
-- Do not force the servo motor shaft by hand.
-- Stop immediately if a component becomes unusually hot or emits an unusual smell.`
+CRITICAL SAFETY & POWER RULES:
+1. Disconnect the USB cable from the power bank before touching, removing, or inserting any jumper wire.
+2. Never reverse power bank polarity. Connect only via Nano USB port.
+3. NEVER connect 5V directly to GND (Short Circuit).
+4. Each LED MUST have its own 220–330 Ω series resistor.
+5. If anything becomes hot, smells unusual, or resets repeatedly, disconnect power immediately and call the facilitator!
+6. Do not modify the Arduino program unless explicitly told to do so.`
   },
   {
-    id: 'hardware',
-    title: 'PAGES 5-14: COMPONENT REFERENCES',
-    subtitle: 'Arduino, LCD (Parallel/I2C), Servo Motor, LED & Breadboard',
-    content: `HARDWARE COMPONENT TECHNICAL SPECIFICATIONS & DIAGNOSTICS
+    id: 'fault_types',
+    title: 'SECTIONS 5–9: FAULT DIAGNOSTICS A–D',
+    subtitle: 'Disconnected Pins, Reversed LEDs, Ground Faults & Combined Issues',
+    content: `FAULT DIAGNOSTIC TAXONOMY (SECTIONS 5–9):
 
-1. ARDUINO CONTROLLER (PAGES 5-6)
-- Digital pins D0–D13, Analogue inputs A0–A5, Regulated 5V & GND rails.
-- Common failure causes: Missing power/ground, incorrect signal pin assignment, loose breadboard placement, unstable supply, software/hardware pin mismatch.
-- Chatbot rule: Never assume a component is connected to a specific pin unless the official circuit configuration confirms it.
+FAULT TYPE A: A DIGITAL-PIN WIRE IS DISCONNECTED
+- Symptoms: One LED stays off while other works, buzzer fails to respond, or component works intermittently.
+- Circuit 1 Pins: LED 1 = D8 | LED 2 = D9 | Button = D2 | Buzzer = D3
+- Circuit 2 Pins: LED 1 = D5 | LED 2 = D6 | Button = D7 | Buzzer = D8
+- Procedure: Disconnect power bank USB -> Locate component -> Reconnect jumper to documented Nano digital pin -> Verify resistor & ground -> Re-apply power.
 
-2. LCD DISPLAY MODULE (PAGES 7-9)
-- Common character LCD: 16 columns x 2 rows (16x2).
-- Parallel pinout: VSS (GND), VDD (5V), V0 (Contrast), RS, R/W, E, D0–D7, LED+/A, LED-/K.
-- I2C module: 4 pins (VCC, GND, SDA, SCL).
-- Brightness vs Contrast: Backlight illuminates the screen; contrast controls character clarity against the background (potentiometer). A lit backlight does NOT guarantee correct data or initialisation!
-- Symptoms:
-  * Backlight too dim/bright: Inspect backlight supply, resistor, driver or PWM setting.
-  * Backlight on, blank / dark blocks: Check contrast potentiometer, VDD/VSS, RS/E/data pins, and program initialisation.
-  * Random characters: Loose wiring, bad data lines, missing common ground, power fluctuation.
+FAULT TYPE B: AN LED IS REVERSED
+- Symptoms: One LED is dark despite signal wire and resistor being connected.
+- Polarity: Longer leg = Anode (+); Shorter leg / flat edge = Cathode (-).
+- Procedure: Disconnect power bank USB -> Rotate LED so Anode connects to resistor/pin and Cathode connects to GND rail -> Never remove resistor -> Re-apply power.
 
-3. SERVO MOTOR (PAGES 10-12)
-- Actuator with internal gears, motor, feedback pot & control board (SG90 micro servo class: 4.8-6V, timed pulse control, ~0-180°).
-- Connections: Power (VCC), Ground (GND), Signal (PWM from controller).
-- Current demand: Can draw peak current exceeding Arduino onboard regulator capacity. If separate supply is used, grounds must be connected together (Common Ground).
-- Symptoms:
-  * No movement: Missing power/ground, wrong signal pin, mechanical jam.
-  * Erratic twitching / jitter: Loose signal wire, missing common ground, unstable supply.
-  * Controller resets when servo moves: Insufficient supply current or drop on the 5V line.
-  * Buzzing / hot: Immediately disconnect power! Blocked gear mechanism or miswired leads. Never swap wires while powered!
+FAULT TYPE C: A GROUND CONNECTION IS DISCONNECTED
+- Symptoms: Both LEDs off, button unresponsive, buzzer silent, or multiple components failing together.
+- Procedure: Disconnect power bank USB -> Trace jumper from Nano GND to breadboard ground rail -> Confirm all cathodes, button return, and buzzer negative share this rail -> Reconnect -> Re-apply power.
+- Caution: Never connect 5V to GND to "test" ground!
 
-4. LED INDICATOR (PAGE 13)
-- Anode (+) longer lead, Cathode (-) flat package edge.
-- Always requires series current-limiting resistor. Never connect LED directly across supply without resistor!
-
-5. BREADBOARD & JUMPERS (PAGE 14)
-- Terminal rows and side power buses. Beware of split/interrupted power rails on some breadboards.
-- Inspect row alignment carefully; a wire in an adjacent row is an open circuit.`
+FAULT TYPE D: COMBINED OR PARTIAL FAULTS
+- Tackle one confirmed problem at a time.
+- Power off before every wiring change. Re-verify the circuit against the full pin map.`
   },
   {
-    id: 'faults',
-    title: 'PAGES 15-20: FAULT CATALOGUE (F01–F06)',
-    subtitle: 'Official Diagnostic & Corrective Procedures',
-    content: `OFFICIAL FAULT CATALOGUE & STEP-BY-STEP PROCEDURES
+    id: 'wiring_ref',
+    title: 'SECTIONS 10–13: DETAILED WIRING REFERENCE',
+    subtitle: 'Circuit 1 vs Circuit 2 Schematics & Symptom Table',
+    content: `CIRCUIT 1 DETAILED WIRING:
+- LED 1: Nano D8 through 220–330 Ω resistor to LED Anode; Cathode to GND rail.
+- LED 2: Nano D9 through 220–330 Ω resistor to LED Anode; Cathode to GND rail.
+- Button: One terminal to Nano D2; other terminal to GND rail (code uses INPUT_PULLUP).
+- Buzzer: Positive (+) terminal to Nano D3; negative (-) terminal to GND rail.
+- Common Ground: Nano GND pin to breadboard GND rail.
 
-FAULT F01: LCD BRIGHTNESS OR CONTRAST INCORRECT
-- Symptoms: Backlight too dim, too bright, or screen blank despite illumination.
-- Action: Disconnect power. Clarify whether issue is illumination (backlight) or character contrast. Inspect potentiometer/resistor. Request supervisor verification before re-energising.
+CIRCUIT 2 DETAILED WIRING:
+- LED 1: Nano D5 through 220–330 Ω resistor to LED Anode; Cathode to GND rail.
+- LED 2: Nano D6 through 220–330 Ω resistor to LED Anode; Cathode to GND rail.
+- Button: One terminal to Nano D7; other terminal to GND rail (code uses INPUT_PULLUP).
+- Buzzer: Positive (+) terminal to Nano D8; negative (-) terminal to GND rail.
+- Common Ground: Nano GND pin to breadboard GND rail.
+*Important: In Circuit 2, D8 is for Buzzer! In Circuit 1, D8 is for LED 1. Always verify which circuit you have before changing wires!
 
-FAULT F02: MISPLACED WIRES
-- Symptoms: Component unresponsive, garbled LCD text, servo not moving, unexpected short circuit.
-- Action: Disconnect power. Compare source and destination endpoints against official diagram. Move only confirmed misplaced wire. Do not guess pin numbers.
-
-FAULT F03: REVERSED POWER POLARITY
-- Danger: Swapped positive and negative supply leads will destroy semiconductors!
-- Action: DO NOT ENERGISE. Disconnect supply immediately. Trace polarity markings. Correct wiring while unpowered. Must have supervisor sign-off before powering.
-
-FAULT F04: SERVO WIRES SWAPPED
-- Symptoms: Servo buzzing, overheating, controller resetting, erratic operation.
-- Action: Disconnect power immediately. Identify exact lead definitions from servo datasheet. Re-wire to power, ground, and PWM signal pin. Never test combinations while powered.
-
-FAULT F05: DISCONNECTED WIRES
-- Symptoms: Component dead or intermittent.
-- Action: Disconnect power. Inspect loose jumper endpoints. Trace back to correct breadboard row or header pin according to schematic.
-
-FAULT F06: CUT JUMPER WIRES
-- Symptoms: Complete open circuit on a specific line.
-- Action: Disconnect power. Identify both severed endpoints. Replace with an approved replacement jumper wire between the exact same endpoints. Supervisor must inspect before test.`
+SYMPTOMS & LIKELY CAUSES:
+- Both LEDs off, buzzer works -> Check both LED pin wires, LED polarities, resistors, or local LED ground.
+- Only LED 1 off -> Check LED 1 pin wire, polarity, resistor, or row.
+- Buzzer never sounds -> Check button wiring (D2/D7 to GND), button placement, buzzer signal wire (D3/D8), buzzer polarity, or ground.
+- Buzzer always sounds -> Button is stuck, miswired, or button signal pin is permanently shorted to GND.
+- Board resets / components heat up -> Short circuit! Disconnect power immediately and call the facilitator!`
   },
   {
-    id: 'decision_trees',
-    title: 'PAGES 21-24: DIAGNOSTIC DECISION TREES',
-    subtitle: 'Power Diagnostics, Systematic Debugging & Decision Trees',
-    content: `DECISION TREES & 9-STEP DEBUGGING METHOD (PAGES 21-24)
+    id: 'guidance',
+    title: 'SECTIONS 14–20: BREADBOARD & TESTING',
+    subtitle: 'Breadboard Rows, Button Straddling, Power Bank & Final Test',
+    content: `BREADBOARD INSPECTION & TESTING GUIDE (SECTIONS 14–20):
 
-SYSTEMATIC 9-STEP DEBUGGING:
-1. Observe: Record exact symptom (e.g. "Backlight is on, no text visible").
-2. Scope: Affects one component or entire system?
-3. Isolate: Disconnect power before touching any wires!
-4. Consult: Reference schematic and manual.
-5. Hypothesize: Form evidence-based explanation.
-6. Correct: Change ONE connection at a time.
-7. Verify: Request supervisor inspection BEFORE restoring power.
-8. Record: Document changes and outcome.
-9. Communicate: Update other sub-team via walkie-talkie.
+BREADBOARD ROW RULES:
+- Terminal strips: 5 connected holes per row. Components in the same row are electrically joined.
+- Centre Trench: Separates the two sides. Tactile push buttons MUST straddle this trench so pressing joins the intended circuits without permanent shorts.
+- Resistors: Must connect across separate rows in series with the LED. Never insert both resistor legs into the same connected row!
 
-LCD DECISION TREE:
-- No backlight -> Check backlight supply, polarity, series resistor.
-- Backlight on, blank screen -> Adjust contrast pot, verify VDD/VSS & control lines.
-- Dark blocks -> Adjust contrast pot, verify controller initialisation code.
-- Faint text -> Differentiate backlight vs contrast pot.
-- Random characters -> Check data wires D4-D7, common ground, supply ripple.
+POWER BANK USB CONNECTION:
+- Connect USB cable to Nano ONLY after inspecting the circuit while completely unpowered.
+- Keep the circuit on a dry, stable surface.
+- If anything gets warm or smells unusual, pull the USB cable immediately.
 
-SERVO DECISION TREE:
-- No movement -> Verify supply voltage, ground, signal pin assignment, check for mechanical jam.
-- Jitter / twitching -> Check signal wire, ensure shared common ground with Arduino.
-- Controller resets -> Supply voltage dip from current spike. Separate supply needed.
-- Buzzing / overheating -> Emergency disconnect! Check gear obstruction or crossed leads.`
+FINAL FUNCTIONAL TEST PROCEDURE (SECTION 20):
+1. Connect USB from Nano to power bank -> Nano powers up normally.
+2. Leave button released -> Both LEDs remain ON; buzzer OFF.
+3. Press and hold button -> Both LEDs remain ON; buzzer ON.
+4. Release button -> Both LEDs remain ON; buzzer OFF.
+5. Stability -> No heating, smell, resets, or flickering.
+6. Upon passing physical inspection, enter supervisor verification code into portal.`
   },
   {
-    id: 'verification',
-    title: 'PAGES 25-30: AI RULES & FINAL VERIFICATION',
-    subtitle: 'Aviation Principles, Glossary & Supervisor Verification',
-    content: `AI CHATBOT PROTOCOL & FINAL MISSION VERIFICATION (PAGES 25-30)
+    id: 'chatbot_protocol',
+    title: 'SECTIONS 21–29: CHATBOT PROTOCOL & FAQ',
+    subtitle: 'AI Operating Guidelines, Dialogues & Verification Rules',
+    content: `CHATBOT OPERATING RULES & FAQ (SECTIONS 21–29):
 
-PAGE 29 FINAL SUPERVISOR VERIFICATION CHECKLIST:
-1. Power & Wiring: Supply polarity checked, power/ground rails verified, no short circuits, servo leads safe.
-2. LCD: Backlight functional, contrast adjusted, readable status message displayed.
-3. LED: Illuminated as per program state with intact current-limiting resistor.
-4. Servo: Smooth positional movement without buzzing or overheating.
-5. Final Code Submission: Upon supervisor PASS sign-off, enter the final code into the submission portal to stop the timer.
+QUICK ANSWER FOR PARTICIPANT FIRST STEP:
+"Disconnect the power bank, identify the circuit and pin map, inspect the Arduino digital-pin wires, check LED polarity and series resistors, confirm the common GND connection, then reconnect power only after the circuit is safe."
 
-PAGE 30 AI CHATBOT STRICT RESPONSE MANDATES:
-1. Format: Likely issue -> Confirm symptom -> Safety instruction -> Diagnostic steps -> Corrective action -> Verification -> Escalation.
-2. Zero Hallucination: Never invent pin numbers or wire colours.
-3. Strict Safety: ALWAYS instruct participants to disconnect power before wiring. Never suggest testing reversed polarity or swapping powered wires.`
+AI COPILOT RULES:
+1. Always mandate disconnecting the USB power bank before wire modifications.
+2. Distinguish clearly between Circuit 1 and Circuit 2 pinouts.
+3. Never suggest modifying the program code.
+4. Never suggest connecting 5V to GND or bypassing LED resistors.
+5. Guide participants through one confirmed fault at a time.
+6. Escalate immediately to the facilitator if heat, burning smells, or board resets occur.
+
+FINAL SUPERVISOR CODE:
+Upon completing all physical circuit repairs and verifying proper operation, obtain the supervisor code and enter it below to stop the mission timer.`
   }
 ];

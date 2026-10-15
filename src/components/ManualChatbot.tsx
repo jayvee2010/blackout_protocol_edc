@@ -17,312 +17,202 @@ interface ChatMessage {
 }
 
 /**
- * Strict, zero-hallucination inference engine based exclusively on
- * the official 30-page "Mission AI-Impossible Technical User Manual & Circuit Troubleshooting Guide".
- *
- * It formats every diagnostic answer in accordance with Section 30.3:
- * 1. Likely issue
- * 2. Confirm the symptom
- * 3. Safety instruction (ALWAYS power off before touching wires)
- * 4. Diagnostic steps
- * 5. Corrective action
- * 6. Verification (supervisor approval required)
- * 7. Escalation
+ * Strict, zero-hallucination inference engine based exclusively on the updated
+ * "Arduino Circuit Troubleshooting Manual: Participant Edition (Circuit 1 & Circuit 2)"
+ * Symbiosis IEEE Student Branch • Symbiosis Institute of Technology, Pune.
  */
 function answerFromManual(rawQuery: string): string {
   const q = rawQuery.toLowerCase().trim();
 
-  // 1. General safety / power rules
-  if (q.includes('safety') || q.includes('rule') || q.includes('handling')) {
-    return `### 1. Likely Issue: Safety & Circuit Handling Protocol (Manual Page 3)
-### 2. Confirm Symptom: Reviewing fundamental event handling and safety constraints.
-### 3. Safety Instruction: 
-⚠️ **CRITICAL SAFETY DIRECTIVE:** Always disconnect the power source before moving, replacing, or repairing any wire or component. Never short positive supply to ground, and never connect mains voltage to the breadboard.
-### 4. Diagnostic Steps:
-1. Verify you are using only the low-voltage power source approved by event organizers.
-2. Stop immediately if any component becomes unusually hot or produces an abnormal smell.
-3. Do not force the servo motor shaft by hand.
-### 5. Corrective Action: Inspect and correct all wiring while completely unpowered.
-### 6. Verification: Request supervisor inspection and sign-off before restoring power.
-### 7. Escalation: If any component exhibits heat or burning smell, report immediately to the event supervisor.`;
+  // Emergency safety / smoke / heat / smell / reset
+  if (q.includes('hot') || q.includes('heat') || q.includes('smoke') || q.includes('smell') || q.includes('reset') || q.includes('burn')) {
+    return `### ⚠️ CRITICAL SAFETY ALERT: DISCONNECT POWER IMMEDIATELY
+1. **Safety Instruction:** Disconnect the USB cable from the power bank right now. Do NOT attempt further power-up tests.
+2. **Likely Cause:** A short circuit (such as 5V connected directly to GND), a severely miswired component, or a damaged board.
+3. **Action:** Call the event facilitator immediately for physical inspection. Never troubleshoot a hot, smoking, or burnt circuit.`;
   }
 
-  // 2. Reversed polarity (F03)
-  if (q.includes('reverse') || q.includes('polarity') || q.includes('f03') || q.includes('wrong power')) {
-    return `### 1. Likely Issue: Fault F03 — Reversed Power Polarity (Manual Page 17)
-### 2. Confirm Symptom: Have the positive (+) and negative (-) supply leads been swapped or is reversed polarity suspected?
-### 3. Safety Instruction:
-⚠️ **HAZARDOUS CONDITION:** DO NOT ENERGISE THE CIRCUIT. Disconnect power immediately. Reversed supply polarity can permanently destroy semiconductors including the Arduino, LCD, and servo.
-### 4. Diagnostic Steps:
-1. Ensure the power source is completely disconnected.
-2. Inspect the positive (+) and negative (-) polarity markings on your supply source.
-3. Trace both power wires to the breadboard rails and Arduino headers.
-4. Compare with the approved circuit diagram.
-### 5. Corrective Action:
-Correct the supply polarity connections while the circuit remains entirely unpowered. Never use trial-and-error to test polarity.
-### 6. Verification:
-The circuit MUST NOT be re-energized until an event supervisor has physically verified the correction.
-### 7. Escalation:
-If the circuit was already energized with reversed polarity, report the incident immediately to the event supervisor for hardware assessment.`;
+  // "What should I do first?" or getting started
+  if (q.includes('first') || q.includes('start') || q.includes('what should i do') || q.includes('begin') || q.includes('how to use')) {
+    return `### Quick Answer: Safe Troubleshooting Procedure
+1. **Power Off:** Disconnect the USB cable from the power bank before touching or inspecting any wire.
+2. **Identify Circuit:** Determine whether your board is **Circuit 1** or **Circuit 2** from the pin map:
+   - **Circuit 1:** LED 1 (D8), LED 2 (D9), Button (D2 to GND), Buzzer (D3 to GND).
+   - **Circuit 2:** LED 1 (D5), LED 2 (D6), Button (D7 to GND), Buzzer (D8 to GND).
+3. **Inspect Hardware:** Inspect Arduino digital-pin jumpers, check LED polarities and series resistors (220–330 Ω), and verify the common GND rail connection.
+4. **Fix One at a Time:** Correct one confirmed fault at a time while power remains disconnected.
+5. **Connect Power:** Reconnect USB to the power bank only after the circuit is safe and inspected.`;
   }
 
-  // 3. LCD Issues (F01, Decision tree Page 23, Pages 7-9)
-  if (q.includes('lcd') || q.includes('screen') || q.includes('display') || q.includes('contrast') || q.includes('backlight') || q.includes('f01')) {
-    // Contrast vs Backlight
-    if (q.includes('bright') || q.includes('dim') || q.includes('glow')) {
-      return `### 1. Likely Issue: Fault F01 — LCD Backlight Brightness Incorrect (Manual Page 8, 15)
-### 2. Confirm Symptom: Is the LCD backlight excessively bright, too dim, or unlit, while text readability is secondary?
-### 3. Safety Instruction:
-⚠️ Disconnect power before inspecting or modifying display wiring.
-### 4. Diagnostic Steps:
-1. Note that backlight brightness and character contrast are two completely separate circuits.
-2. Inspect the backlight connections (Pins LED+ / A and LED- / K on parallel displays).
-3. Check whether the module uses an approved series current-limiting resistor, a driver, or PWM control.
-4. Do not bypass a required resistor.
-### 5. Corrective Action:
-Re-route backlight supply through the designated current-limiting resistor or driver according to the official circuit diagram.
-### 6. Verification:
-Request supervisor verification before restoring power. Confirm display surface is evenly illuminated.
-### 7. Escalation:
-If PWM control is in use, ask the Lab Team to verify the microcontroller sketch's brightness control setting.`;
+  // Safety rules / Power rule
+  if (q.includes('safety') || q.includes('rule') || q.includes('power rule') || q.includes('short circuit')) {
+    return `### Safety Rules & Power Policy (Section 1)
+- **Power Rule:** Disconnect the USB cable from the power bank before touching, inserting, or removing any jumper wire. Merely releasing the button or flipping a power bank switch is not enough.
+- **Never Connect 5V to GND:** Direct connection causes a short circuit and can permanently damage the Nano.
+- **Resistors Required:** Each LED must have its own 220–330 Ω series current-limiting resistor. Never bypass or remove resistors.
+- **No Program Changes:** Do not alter the Arduino code. This is strictly a hardware troubleshooting challenge.
+- **USB Power Only:** Power the Nano solely through its USB port from the power bank; never connect power bank leads directly to the breadboard rails.`;
+  }
+
+  // Pinout / Pin map / Which circuit / Differences
+  if (q.includes('pin') || q.includes('map') || q.includes('circuit 1') || q.includes('circuit 2') || q.includes('d8') || q.includes('d2') || q.includes('d3') || q.includes('d5') || q.includes('d6') || q.includes('d7')) {
+    return `### Circuit Pin Maps (Section 2, 10, 11)
+Both circuits share the same behavior: 2 LEDs stay ON continuously, and the buzzer sounds ONLY while the button is pressed. However, their digital pin assignments differ:
+
+| Function | Circuit 1 | Circuit 2 | Expected Behavior |
+| :--- | :--- | :--- | :--- |
+| **LED 1 Signal** | **D8** (via 220–330 Ω resistor) | **D5** (via 220–330 Ω resistor) | Stays ON continuously |
+| **LED 2 Signal** | **D9** (via 220–330 Ω resistor) | **D6** (via 220–330 Ω resistor) | Stays ON continuously |
+| **Button Input** | **D2** (between D2 and GND) | **D7** (between D7 and GND) | Pressed = LOW, Released = HIGH |
+| **Buzzer Signal** | **D3** (+ to D3, - to GND) | **D8** (+ to D8, - to GND) | Sounds ONLY while pressed |
+| **Common Ground**| Nano GND to GND rail | Nano GND to GND rail | Returns all cathode/ground paths |
+
+⚠️ **CRITICAL NOTE ON PIN D8:**
+- In **Circuit 1**, D8 is used for **LED 1**.
+- In **Circuit 2**, D8 is used for the **Buzzer**.
+Always verify which circuit you have before deciding if a wire on D8 is correct!`;
+  }
+
+  // LED issues (one off, both off, reversed, dark)
+  if (q.includes('led') || q.includes('light') || q.includes('glow') || q.includes('anode') || q.includes('cathode') || q.includes('resistor')) {
+    if (q.includes('both')) {
+      return `### Diagnostic: Both LEDs Are OFF (Section 5, 8, 13)
+1. **Safety:** Disconnect the USB cable from the power bank before checking wires.
+2. **Likely Causes:**
+   - Disconnected common ground rail from Nano GND.
+   - Both LED signal wires disconnected.
+   - Both LEDs reversed in polarity.
+   - Missing or misaligned series resistors.
+3. **Action:**
+   - Follow the jumper from Nano GND to the breadboard ground rail. Ensure both LED cathodes return to this rail.
+   - Verify signal wires: **Circuit 1 = D8 & D9**; **Circuit 2 = D5 & D6**.
+   - Check LED orientation: Longer leg is Anode (+), shorter leg / flat edge is Cathode (-).
+   - Verify each LED has an intact 220–330 Ω series resistor.`;
     }
 
-    if (q.includes('blank') || q.includes('dark block') || q.includes('black box') || q.includes('no text') || q.includes('read') || q.includes('characters')) {
-      return `### 1. Likely Issue: Fault F01 / LCD Initialization & Contrast (Manual Pages 8, 9, 23)
-### 2. Confirm Symptom: The backlight is illuminated, but the screen displays dark blocks, faint text, or is completely blank.
-### 3. Safety Instruction:
-⚠️ Disconnect power before adjusting or touching any control/data jumpers.
-### 4. Diagnostic Steps:
-1. Recognize that a lit backlight does NOT confirm valid communication or initialisation.
-2. If single-row dark blocks appear: check the V0 contrast potentiometer and verify if the Arduino has initialised the display.
-3. Verify VDD (5V) and VSS (GND) connections.
-4. For parallel displays: check RS, E, and data lines (D4–D7 or D0–D7). For I2C displays: verify VCC, GND, SDA, and SCL.
-5. Inspect for loose breadboard rows or missing common ground.
-### 5. Corrective Action:
-Adjust the contrast potentiometer. If text remains missing, reconnect any loose data wires to their official pin locations.
-### 6. Verification:
-Obtain supervisor approval, restore power, and verify the welcome status message appears legibly.
-### 7. Escalation:
-If connections match the schematic but text remains blank, ask the Lab Team to confirm the pin assignments in the uploaded sketch.`;
+    if (q.includes('reverse') || q.includes('backwards') || q.includes('polarity')) {
+      return `### Fault Type B: LED Reversed (Section 7)
+1. **Safety:** Disconnect the USB cable from the power bank.
+2. **Polarity Check:**
+   - **Anode (+):** Usually longer leg. Connects to the Arduino digital pin via the 220–330 Ω resistor.
+   - **Cathode (-):** Usually shorter leg / flat edge on plastic package. Connects to the GND rail.
+3. **Corrective Action:**
+   - Carefully remove and rotate the LED so its anode faces the resistor/pin and cathode faces GND.
+   - Keep the series resistor in place. Never power an LED without its current-limiting resistor!
+4. **Verification:** Reconnect USB to power bank; verify the LED stays illuminated continuously.`;
     }
 
-    return `### 1. Likely Issue: LCD Module Diagnostic Evaluation (Manual Pages 7-9, 23)
-### 2. Confirm Symptom: Please specify your exact LCD observation:
-- A. No backlight?
-- B. Backlight ON, but blank screen?
-- C. Dark rectangular blocks on screen?
-- D. Text faint / contrast issue?
-- E. Random or garbled characters?
-### 3. Safety Instruction:
-⚠️ Always disconnect power before tracing or reseating any LCD wires.
-### 4. Diagnostic Steps:
-1. Differentiate backlight (illumination) from contrast (character clarity).
-2. Check power (VDD/VCC) and ground (VSS/GND).
-3. Check contrast pin (V0) potentiometer.
-4. Verify signal lines against the official configuration.
-### 5. Corrective Action:
-Correct one confirmed loose or misplaced wire at a time.
-### 6. Verification:
-Have the supervisor verify wiring prior to restoring power.
-### 7. Escalation:
-Consult the Lab Team if program pin mappings need verification.`;
+    return `### Diagnostic: Single LED Is OFF (Section 6, 7, 13, 15)
+1. **Safety:** Disconnect the USB cable from the power bank first.
+2. **Identify:** Is it LED 1 or LED 2, and which circuit are you troubleshooting?
+   - **Circuit 1:** LED 1 is on **D8**, LED 2 is on **D9**.
+   - **Circuit 2:** LED 1 is on **D5**, LED 2 is on **D6**.
+3. **Checklist:**
+   - **Signal Wire:** Check that the jumper from the assigned digital pin is securely inserted in the same breadboard row as the resistor.
+   - **Resistor:** Ensure a 220–330 Ω series resistor connects between the pin jumper and LED anode.
+   - **LED Polarity:** Confirm Anode (+) connects to resistor, and Cathode (-) connects to GND.
+   - **Breadboard Alignment:** Ensure legs are in the intended separate breadboard rows.
+4. **Verify:** After checking, connect the power bank. Both LEDs should illuminate continuously.`;
   }
 
-  // 4. Servo Motor Issues (F04, Pages 10-12, Page 24)
-  if (q.includes('servo') || q.includes('motor') || q.includes('f04') || q.includes('shaft')) {
-    if (q.includes('buzz') || q.includes('hot') || q.includes('heat') || q.includes('smoke')) {
-      return `### 1. Likely Issue: Servo Overload / Swapped Connections (Manual Pages 10, 12, 18, 24)
-### 2. Confirm Symptom: The servo motor is buzzing continuously, becoming hot, or causing the Arduino to reset.
-### 3. Safety Instruction:
-⚠️ **IMMEDIATE SHUTDOWN:** Disconnect power immediately! Do NOT repeatedly energize the servo to reproduce the symptom.
-### 4. Diagnostic Steps:
-1. Check for physical obstruction blocking the servo output shaft or horn.
-2. Never force the servo shaft by hand.
-3. Verify servo wire orientation: Ground, Supply Voltage, and Control Signal.
-4. Note that wire colors are NOT universal—consult the specific servo datasheet.
-### 5. Corrective Action:
-Clear any mechanical jam. If leads were swapped, re-wire power, ground, and signal to their designated points while unpowered. Never swap wires while powered!
-### 6. Verification:
-Request supervisor inspection before re-applying power. Ensure servo shaft moves smoothly without buzzing.
-### 7. Escalation:
-If the Arduino resets whenever the servo engages, report a supply-current deficit to the supervisor.`;
+  // Buzzer issues (never sounds, always sounds, continuously on, stuck button)
+  if (q.includes('buzzer') || q.includes('sound') || q.includes('beep') || q.includes('tone') || q.includes('silent')) {
+    if (q.includes('always') || q.includes('continuous') || q.includes('stuck') || q.includes('wont stop')) {
+      return `### Diagnostic: Buzzer Sounds Continuously (Section 5, 13, 16, 17)
+1. **Safety:** Disconnect the USB cable from the power bank.
+2. **Likely Cause:** The button input pin is permanently grounded. The Arduino code uses \`INPUT_PULLUP\`, meaning the pin triggers LOW when grounded.
+3. **Checklist:**
+   - Check if the push button is physically stuck down.
+   - Check push button placement: tactile 4-leg buttons must straddle the breadboard centre trench so unpressed sides remain open.
+   - Inspect for any jumper bridging the button signal pin (**D2** in Circuit 1, **D7** in Circuit 2) directly to GND.
+4. **Verify:** Reconnect power; the buzzer should now remain silent until the button is pressed.`;
     }
 
-    if (q.includes('not move') || q.includes('stuck') || q.includes('dead') || q.includes('twitch') || q.includes('jitter')) {
-      return `### 1. Likely Issue: Fault F04 / Servo Signal or Ground Fault (Manual Pages 11, 12, 24)
-### 2. Confirm Symptom: The servo fails to move or exhibits unpredictable twitching/jittering.
-### 3. Safety Instruction:
-⚠️ Disconnect power before checking or reseating servo leads. Never connect the supply voltage lead to an Arduino signal pin!
-### 4. Diagnostic Steps:
-1. Check if the servo has a complete power path (VCC) and ground (GND).
-2. Ensure there is a shared Common Ground between the Arduino and the servo supply.
-3. Check whether the signal lead is plugged into the exact PWM pin declared in the sketch.
-4. Check for mechanical gear jamming.
-### 5. Corrective Action:
-Reconnect loose signal wires and ensure common ground continuity. Never test lead combinations by random trial and error.
-### 6. Verification:
-Obtain supervisor clearance before restoring power. Observe if the servo smoothly sweeps to its commanded angle.
-### 7. Escalation:
-If the signal pin destination is unknown, consult the official circuit configuration on Page 6 or ask the Lab Team.`;
-    }
-
-    return `### 1. Likely Issue: Servo Motor Wiring & Control (Manual Pages 10-12, 18, 24)
-### 2. Confirm Symptom: What is the observed servo behavior?
-- Does it fail to move completely?
-- Does it twitch/jitter erratically?
-- Does the Arduino reset when it moves?
-- Does it buzz continuously or get warm?
-### 3. Safety Instruction:
-⚠️ Disconnect power immediately. Never force the servo arm by hand and never swap leads on a powered servo.
-### 4. Diagnostic Steps:
-1. Verify 3 connections: Ground, Supply (4.8V-6V), Signal (PWM pulses).
-2. Ensure common ground between Arduino and external servo supply if used.
-3. Confirm the control pin matches the official program configuration.
-### 5. Corrective Action:
-Correct identified misplaced leads against the official schematic.
-### 6. Verification:
-Have the supervisor verify wiring before restoring power.
-### 7. Escalation:
-Consult the event supervisor if the motor continues buzzing or drawing excessive current.`;
+    return `### Diagnostic: Buzzer Never Sounds (Section 5, 6, 13, 16, 17)
+1. **Safety:** Disconnect the USB cable from the power bank.
+2. **Identify Circuit & Pins:**
+   - **Circuit 1:** Button is on **D2**, Buzzer positive is on **D3**.
+   - **Circuit 2:** Button is on **D7**, Buzzer positive is on **D8**.
+3. **Diagnostic Checks:**
+   - **Buzzer Signal:** Verify Buzzer (+) connects to assigned pin (**D3** for C1, **D8** for C2) and Buzzer (-) connects to GND.
+   - **Button Wiring:** Verify one button terminal connects to the assigned pin (**D2** for C1, **D7** for C2) and the other connects to GND.
+   - **Button Placement:** Ensure the push button straddles the centre trench and makes solid contact.
+4. **Verify:** Reconnect USB to power bank; press and hold the button. The buzzer should sound only while pressed.`;
   }
 
-  // 5. LED Issues (Page 13)
-  if (q.includes('led') || q.includes('light') || q.includes('resistor') || q.includes('anode') || q.includes('cathode')) {
-    return `### 1. Likely Issue: LED Circuit Configuration & Polarity (Manual Page 13)
-### 2. Confirm Symptom: The LED does not illuminate or illuminate unexpectedly.
-### 3. Safety Instruction:
-⚠️ Disconnect power. **MANDATORY RULE:** Never bypass the series current-limiting resistor or connect an LED directly across power rails without resistance.
-### 4. Diagnostic Steps:
-1. Check LED polarity: Anode (+) is typically the longer lead; Cathode (-) is the shorter lead / flat edge on the plastic package.
-2. Verify the presence and value of the series current-limiting resistor.
-3. Inspect ground return and control pin wiring.
-4. Confirm whether the program's current state commands the LED ON or OFF.
-### 5. Corrective Action:
-Orient the anode toward the control pin (through the resistor) and cathode toward ground. Re-insert securely into the breadboard.
-### 6. Verification:
-Request supervisor verification before re-energizing the circuit.
-### 7. Escalation:
-Confirm with the Lab Team the expected programmed output state for the LED.`;
+  // Push button specific
+  if (q.includes('button') || q.includes('press') || q.includes('pullup') || q.includes('input_pullup') || q.includes('switch')) {
+    return `### How to Check the Push Button (Section 3, 14, 16)
+- **Circuit Wiring:**
+  - **Circuit 1:** Push button wired between **D2** and **GND**.
+  - **Circuit 2:** Push button wired between **D7** and **GND**.
+  - *Do NOT connect the button to 5V!*
+- **INPUT_PULLUP Behavior:**
+  - Released: Pin reads HIGH internally -> Buzzer is OFF.
+  - Pressed: Button shorts pin to GND (reads LOW) -> Buzzer is ON.
+- **Breadboard Placement:** 4-leg tactile buttons must straddle the breadboard's centre trench. If placed incorrectly, internal leg pairs may permanently short the signal pin to GND, causing continuous buzzing.`;
   }
 
-  // 6. Cut Jumper Wires (F06, Page 20)
-  if (q.includes('cut') || q.includes('broken wire') || q.includes('severed') || q.includes('f06')) {
-    return `### 1. Likely Issue: Fault F06 — Cut Jumper Wires (Manual Page 20)
-### 2. Confirm Symptom: A jumper wire has been intentionally cut, resulting in a deliberate open circuit.
-### 3. Safety Instruction:
-⚠️ Disconnect power before removing or installing jumper wires. Do not cut or splice wires while energized.
-### 4. Diagnostic Steps:
-1. Identify which component or functional section has stopped working.
-2. Locate the severed jumper and trace both of its original endpoints.
-3. Compare the endpoints with the official wiring diagram.
-4. Do not reconnect to nearby arbitrary holes; the replacement must restore the exact intended circuit path.
-### 5. Corrective Action:
-Remove the damaged wire and connect an approved replacement jumper wire between the exact same original endpoints.
-### 6. Verification:
-Verify the replacement is secure and correctly seated. Request supervisor approval before turning on power.
-### 7. Escalation:
-If you cannot determine the original endpoints of the cut wire, consult the official wiring map on Page 6 or ask your supervisor. The chatbot is strictly prohibited from inventing pin locations.`;
+  // Ground (GND) / Split rails
+  if (q.includes('ground') || q.includes('gnd') || q.includes('split rail') || q.includes('rail')) {
+    return `### Ground (GND) and Split Rail Guide (Section 8, 18)
+1. **Safety:** Disconnect the USB cable from the power bank.
+2. **Common Ground Principle:** Ground is the shared reference return path. A breadboard ground rail is useful ONLY if wired to a Nano GND pin.
+3. **Symptoms of Disconnected Ground:** Both LEDs off, buzzer silent, or multiple components failing simultaneously.
+4. **Procedure:**
+   - Trace the jumper from the Nano GND pin to the breadboard ground rail.
+   - Confirm all component grounds (both LED cathodes, buzzer negative terminal, and button return) connect to that same grounded rail.
+   - **Check for Split Rails:** Many breadboards have a break in the middle of side rails. Ensure your ground jumper connects to the section your components actually use.
+   - ⚠️ **NEVER connect 5V to GND to "test" the circuit!**`;
   }
 
-  // 7. Misplaced / Disconnected Wires (F02, F05, Page 16, 19)
-  if (q.includes('misplaced') || q.includes('loose') || q.includes('disconnected') || q.includes('f02') || q.includes('f05') || q.includes('wrong row') || q.includes('breadboard')) {
-    return `### 1. Likely Issue: Fault F02 (Misplaced Wire) / Fault F05 (Disconnected Wire) (Manual Pages 14, 16, 19)
-### 2. Confirm Symptom: A jumper is connected to the wrong pin/row, or an endpoint has come loose, causing intermittent or missing functionality.
-### 3. Safety Instruction:
-⚠️ Always disconnect power before touching, inspecting, or reseating breadboard jumpers.
-### 4. Diagnostic Steps:
-1. Identify the malfunctioning component and trace each of its wires from source to destination.
-2. Check breadboard row alignment: a wire inserted into a neighbouring row is an open circuit.
-3. Check for breadboard split power rails (some side power buses are interrupted in the middle).
-4. Compare pin numbers with the official circuit configuration.
-### 5. Corrective Action:
-Move or reconnect only the confirmed misplaced or loose wire. Never guess pin destinations.
-### 6. Verification:
-Ensure both ends are firmly seated. Request supervisor verification before re-applying power.
-### 7. Escalation:
-If the destination pin is ambiguous, consult the official pin map on Page 6 or the Lab Team.`;
+  // Disconnected or misplaced wire / jumper
+  if (q.includes('wire') || q.includes('jumper') || q.includes('disconnected') || q.includes('loose') || q.includes('flicker')) {
+    return `### Disconnected or Loose Digital Pin Wire (Section 6, 13)
+1. **Safety:** Disconnect the USB cable from the power bank. Do not move wires while powered.
+2. **Check Your Circuit Map:**
+   - **Circuit 1:** LED 1 = **D8**, LED 2 = **D9**, Button = **D2**, Buzzer = **D3**.
+   - **Circuit 2:** LED 1 = **D5**, LED 2 = **D6**, Button = **D7**, Buzzer = **D8**.
+3. **Action:**
+   - Reseat the loose or missing jumper into the exact documented Nano pin and corresponding breadboard row.
+   - Check that no bare jumper strands bridge adjacent pins or touch the 5V rail.
+4. **Test:** Reconnect power; test if normal behavior is restored.`;
   }
 
-  // 8. Systematic debugging method (Page 22)
-  if (q.includes('debug') || q.includes('method') || q.includes('procedure') || q.includes('step')) {
-    return `### 1. Likely Issue: 9-Step Systematic Debugging Method (Manual Page 22)
-### 2. Confirm Symptom: Structuring an evidence-based investigation across the sub-teams.
-### 3. Safety Instruction:
-⚠️ Disconnect power prior to all wiring inspections. Never change multiple wires at once.
-### 4. Diagnostic Steps (The Official 9 Steps):
-1. **Observe:** Record exactly what is happening (e.g. "Backlight on, no text visible").
-2. **Identify Scope:** Does the issue affect one component or multiple modules?
-3. **Isolate Circuit:** Disconnect power before touching any wires.
-4. **Consult Reference:** Review the component documentation and official wiring map.
-5. **Form a Hypothesis:** Deduce plausible causes based on direct evidence.
-6. **Correct One Fault:** Make one justified correction at a time.
-7. **Verify:** Restore power ONLY after supervisor approves the wiring.
-8. **Record Result:** Document whether the symptom cleared or changed.
-9. **Communicate:** Relate observations and findings to the other sub-team via walkie-talkie.
-### 5. Corrective Action: Apply the 9-step sequence to the active anomaly.
-### 6. Verification: Obtain supervisor sign-off before testing.
-### 7. Escalation: Contact the event supervisor if progress stalls.`;
+  // Multiple or combined faults
+  if (q.includes('multiple') || q.includes('two') || q.includes('combined') || q.includes('case')) {
+    return `### Multiple Faults: Systematic Method (Section 9, 19, 22)
+1. **Note Symptoms:** Record what is observed before touching any wires.
+2. **Power Off:** Disconnect the USB cable from the power bank.
+3. **Shared Paths First:** Inspect Nano power and common GND rail connection before assuming multiple components are dead.
+4. **One at a Time:** Fix one confirmed fault at a time (e.g. restore ground, then rotate reversed LED, then reconnect missing pin wire).
+5. **Re-Test Methodically:** Test after each correction to observe which symptom cleared.
+6. **No Code Edits:** Never alter the program code to bypass a wiring fault.`;
   }
 
-  // 9. Black Box Reference & Verification Code (Pages 25, 29)
-  if (q.includes('black box') || q.includes('fdr') || q.includes('cvr') || q.includes('code') || q.includes('verification') || q.includes('final')) {
-    return `### 1. Likely Issue: Final Circuit Verification & Code Submission (Manual Pages 25, 29)
-### 2. Confirm Symptom: Ready for supervisor final audit or seeking verification code submission details.
-### 3. Safety Instruction:
-⚠️ Ensure all wiring is clean, no exposed conductors or shorts exist, and the circuit is operating stably.
-### 4. Diagnostic Steps (Page 29 Verification Checklist):
-1. Power & Wiring: Supply type and polarity verified; power and ground match diagram; cut/disconnected wires resolved; servo leads verified.
-2. LCD: Backlight functional; contrast adjusted; expected status display text visible.
-3. LED: Indicates expected program state with intact current-limiting resistor.
-4. Servo: Smooth response to commands without abnormal heating or continuous buzzing.
-### 5. Corrective Action:
-Present the operating circuit to your event supervisor for final evaluation (PASS / NEEDS REVIEW).
-### 6. Verification:
-Upon supervisor PASS sign-off, you will obtain the official verification code to submit in the website terminal below.
-### 7. Escalation:
-Your event supervisor is the authoritative entity for issuing the final verification code upon physical circuit inspection.`;
+  // Final functional test / verification code / finish game
+  if (q.includes('test') || q.includes('pass') || q.includes('finish') || q.includes('code') || q.includes('verification') || q.includes('final')) {
+    return `### Final Functional Test & Mission Verification (Section 20, 28)
+**Pass Criteria:**
+1. Connect USB from Nano to power bank -> Nano powers up normally.
+2. Button Released -> Both LEDs stay ON continuously; buzzer is silent.
+3. Button Pressed -> Both LEDs remain ON; buzzer sounds.
+4. Button Released -> Buzzer stops immediately.
+5. Stability -> No components heating up, no burning smell, no repeated resets.
+
+Once your circuit passes all 5 criteria, show your working hardware to the event facilitator to receive the secret supervisor verification code and submit it in the portal below to stop the mission clock!`;
   }
 
-  // 10. Walkie-talkie / team handover (Page 26, 28)
-  if (q.includes('walkie') || q.includes('team') || q.includes('handover') || q.includes('report') || q.includes('lab') || q.includes('classroom')) {
-    return `### 1. Likely Issue: Team Handover & Walkie-Talkie Protocol (Manual Pages 26, 28)
-### 2. Confirm Symptom: Coordinating diagnostic findings between the Lab Team and Classroom Team.
-### 3. Safety Instruction:
-⚠️ Never perform unauthorized wiring modifications while receiving unverified instructions over radio.
-### 4. Diagnostic Steps (Walkie-Talkie Checklist):
-- Component affected (e.g. Servo, LCD, LED).
-- Observed symptom (facts only, not assumptions).
-- Checks already completed (e.g. "Contrast pot tested, VCC confirmed").
-- Relevant pin or wire location.
-- Specific, clear question for the other team.
-### 5. Corrective Action:
-Use the Page 28 Handover Template to communicate verified data and repeat critical instructions.
-### 6. Verification:
-Inform the partner team once a correction is verified and signed off.
-### 7. Escalation:
-If radio communications conflict with the written schematic, the supervisor makes the final call.`;
-  }
+  // Fallback for out-of-scope or uncatalogued queries
+  return `### Mission AI-Impossible Circuit Assistant Protocol
+As the official Circuit Troubleshooting Copilot for **Circuit 1 & Circuit 2** (Symbiosis IEEE Student Branch • SIT Pune):
 
-  // Fallback for Out-of-Scope queries (Strict adherence to Section 30.1 & 30.4)
-  return `### 1. Likely Issue: Query Out of Scope / Unverified Circuit Data
-### 2. Confirm Symptom: "${rawQuery}"
-### 3. Safety Instruction:
-⚠️ Always ensure the circuit is unpowered before inspecting hardware.
-### 4. Diagnostic Steps:
-As the official Mission AI-Impossible Circuit Assistant, my knowledge base is strictly limited to the official 30-Page Technical User Manual & Circuit Troubleshooting Guide. I am strictly prohibited from hallucinating pin assignments, guessing wire colours, or providing instructions outside the approved circuit manual.
-### 5. Corrective Action:
-Please frame your question around:
-- **Fault F01:** LCD Brightness or Contrast
-- **Fault F02:** Misplaced Wires
-- **Fault F03:** Reversed Power Polarity
-- **Fault F04:** Servo Wires Swapped
-- **Fault F05:** Disconnected Wires
-- **Fault F06:** Cut Jumper Wires
-- Component checks for **Arduino, LCD, Servo Motor, LED, Breadboard**, or the **9-Step Debugging Procedure**.
-### 6. Verification:
-Consult your physical circuit manual or request supervisor assistance.
-### 7. Escalation:
-For specific pinout maps not detailed in the general reference, consult the official circuit configuration on Page 6 or ask your event supervisor.`;
+1. **Power Rule:** Always disconnect the USB cable from the power bank before touching or inspecting any wire.
+2. **State Your Circuit:** Please specify whether you are troubleshooting **Circuit 1** or **Circuit 2**, and what symptom you observe:
+   - Are both LEDs off or only one LED off?
+   - Is the buzzer silent when pressed, or sounding continuously?
+   - Did you find a disconnected pin wire, reversed LED, or missing ground?
+3. **Safety Notice:** If any component is hot, smoking, or smelling burnt, disconnect power immediately and call the facilitator.`;
 }
 
 export const ManualChatbot: React.FC = () => {
@@ -330,12 +220,12 @@ export const ManualChatbot: React.FC = () => {
     {
       id: 'msg-0',
       sender: 'ai',
-      text: `### Mission AI-Impossible — Circuit Troubleshooting Assistant Online
-Welcome Operative. I am your technical diagnostic copilot for the Arduino-Based Electronic Control Unit recovery challenge (Organised by IEEE SB SIT Pune).
+      text: `### Mission AI-Impossible — Circuit Troubleshooting Copilot Online
+Welcome Operative. I am your hardware diagnostic assistant for **Circuit 1** and **Circuit 2** (Organised by Symbiosis IEEE Student Branch, SIT Pune).
 
-My knowledge is strictly restricted to the **Official Technical User Manual & Circuit Troubleshooting Guide (Pages 1–30)**. I adhere strictly to zero-hallucination protocols and will never guess pin assignments, recommend trial-and-error rewiring, or allow unsafe operations.
+⚠️ **POWER RULE:** Keep the USB cable disconnected from the power bank while inspecting or changing any wire. Connect power only after the circuit has been checked.
 
-Describe the symptom or component anomaly you are observing to begin structured diagnosis.`,
+How can I assist you with your LEDs, push button, buzzer, pin maps, or ground connections?`,
       timestamp: 'NOW',
     },
   ]);
@@ -380,16 +270,17 @@ Describe the symptom or component anomaly you are observing to begin structured 
         },
       ]);
       setIsTyping(false);
-    }, 450);
+    }, 350);
   };
 
   const quickQuestions = [
-    'LCD backlight is on but screen is blank or shows dark blocks',
-    'Servo motor is buzzing and getting hot',
-    'One of the jumper wires is cut (Fault F06)',
-    'Suspected reversed power supply polarity (Fault F03)',
-    'Explain the 9-step systematic debugging method',
-    'What are the checks for final verification (Page 29)?'
+    'What should I do first before touching wires?',
+    'What are the pin maps for Circuit 1 and Circuit 2?',
+    'One LED is not glowing',
+    'Both LEDs are off but buzzer works',
+    'Buzzer never sounds when button is pressed',
+    'Buzzer is sounding continuously without pressing button',
+    'The ground wire is disconnected'
   ];
 
   return (
@@ -404,11 +295,11 @@ Describe the symptom or component anomaly you are observing to begin structured 
             <h3 className="text-base md:text-lg font-bold tracking-widest text-cyan-300 flex items-center gap-2">
               <span>CIRCUIT TROUBLESHOOTING AI COPILOT</span>
               <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/20 border border-cyan-400 text-cyan-200">
-                STRICT MANUAL v1.0
+                PARTICIPANT EDITION
               </span>
             </h3>
             <p className="text-[11px] text-gray-400 tracking-wider">
-              IEEE SB SIT PUNE // MISSION AI-IMPOSSIBLE KNOWLEDGE BASE (PAGES 1–30)
+              CIRCUIT 1 & CIRCUIT 2 // SYMBIOSIS IEEE STUDENT BRANCH • SIT PUNE
             </p>
           </div>
         </div>
@@ -423,7 +314,7 @@ Describe the symptom or component anomaly you are observing to begin structured 
       <div className="flex items-center gap-2 px-3 py-2 bg-amber-950/40 border border-amber-500/40 rounded-lg text-amber-200 text-xs">
         <ShieldAlert size={16} className="text-amber-400 shrink-0" />
         <span>
-          <strong>Chatbot Safety Rule:</strong> Always disconnect power before wiring changes. Never swap powered wires or test reversed polarity.
+          <strong>Power Rule:</strong> Keep USB disconnected from power bank while inspecting or moving wires. Never connect 5V to GND!
         </span>
       </div>
 
@@ -457,7 +348,7 @@ Describe the symptom or component anomaly you are observing to begin structured 
         {isTyping && (
           <div className="flex items-center gap-2 text-cyan-400 text-xs p-2">
             <span className="animate-spin">⚙️</span>
-            <span>Consulting official 30-Page Technical Circuit Manual...</span>
+            <span>Consulting official Arduino Circuit Troubleshooting Manual...</span>
           </div>
         )}
         <div ref={messagesEndRef} />
@@ -467,7 +358,7 @@ Describe the symptom or component anomaly you are observing to begin structured 
       <div>
         <div className="text-[11px] font-bold text-gray-400 tracking-wider mb-2 flex items-center gap-1.5">
           <HelpCircle size={13} className="text-cyan-400" />
-          <span>OFFICIAL MANUAL FAULT QUERIES (PAGES 1-30):</span>
+          <span>FREQUENT SYMPTOMS & CHECKS:</span>
         </div>
         <div className="flex flex-wrap gap-2">
           {quickQuestions.map((q, idx) => (
@@ -482,25 +373,29 @@ Describe the symptom or component anomaly you are observing to begin structured 
         </div>
       </div>
 
-      {/* Input Box */}
-      <div className="flex items-center gap-2 pt-2 border-t border-cyan-500/30">
+      {/* Input Field */}
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleSend();
+        }}
+        className="flex items-center gap-2 pt-2 border-t border-cyan-500/30"
+      >
         <input
           type="text"
           value={inputMessage}
           onChange={(e) => setInputMessage(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-          placeholder="Describe component symptom (e.g., 'Servo buzzing', 'LCD dark blocks', 'Cut wire')..."
-          className="flex-1 bg-black/80 border border-cyan-500/60 rounded-xl px-4 py-3 text-xs md:text-sm text-cyan-100 outline-none focus:border-cyan-300 placeholder:text-gray-500"
+          placeholder="Ask about LED 1/2, buzzer, button, D2-D9 pins, polarity, ground rail..."
+          className="flex-1 bg-black/60 border border-cyan-500/40 focus:border-cyan-300 rounded-xl px-4 py-2.5 text-xs text-white placeholder-gray-500 outline-none transition-colors"
         />
         <button
-          onClick={() => handleSend()}
-          disabled={!inputMessage.trim()}
-          className="px-5 py-3 bg-cyan-500 hover:bg-cyan-400 disabled:opacity-40 disabled:hover:bg-cyan-500 text-black font-bold text-xs tracking-widest rounded-xl transition-all shadow-[0_0_20px_rgba(6,182,212,0.6)] flex items-center gap-2 shrink-0"
+          type="submit"
+          className="flex items-center gap-1.5 px-4 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs rounded-xl transition-all shadow-[0_0_15px_rgba(6,182,212,0.4)]"
         >
-          <span>CONSULT</span>
           <Send size={15} />
+          <span>TRANSMIT</span>
         </button>
-      </div>
+      </form>
     </div>
   );
 };

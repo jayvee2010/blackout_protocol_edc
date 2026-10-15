@@ -23,34 +23,58 @@ export const BlackBoxAudioModal: React.FC = () => {
 
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [playbackProgress, setPlaybackProgress] = useState<number>(0);
+  const [currentTime, setCurrentTime] = useState<number>(0);
+  const [duration, setDuration] = useState<number>(0);
+  const audioRef = React.useRef<HTMLAudioElement | null>(null);
 
-  // Play audio on initial modal open
+  // Initialize and handle audio on modal open/close
   useEffect(() => {
+    if (!audioRef.current) {
+      const audio = new Audio('/blackbox_audio.mp3');
+      audioRef.current = audio;
+
+      audio.onloadedmetadata = () => {
+        setDuration(audio.duration || 0);
+      };
+
+      audio.ontimeupdate = () => {
+        if (audio.duration) {
+          setCurrentTime(audio.currentTime);
+          setPlaybackProgress((audio.currentTime / audio.duration) * 100);
+        }
+      };
+
+      audio.onended = () => {
+        setIsPlaying(false);
+        setPlaybackProgress(100);
+      };
+    }
+
+    const audio = audioRef.current;
+
     if (isAudioPopupOpen) {
-      setIsPlaying(true);
-      soundFx.playRadioTransmission();
+      audio.currentTime = 0;
+      setCurrentTime(0);
+      setPlaybackProgress(0);
+      audio.play().then(() => {
+        setIsPlaying(true);
+      }).catch(() => {
+        setIsPlaying(false);
+      });
     } else {
+      if (audio) {
+        audio.pause();
+        audio.currentTime = 0;
+      }
       setIsPlaying(false);
-      soundFx.stopRadioTransmission();
     }
-  }, [isAudioPopupOpen]);
 
-  // Simulated playback progress
-  useEffect(() => {
-    let interval: ReturnType<typeof setInterval>;
-    if (isPlaying) {
-      interval = setInterval(() => {
-        setPlaybackProgress((prev) => {
-          if (prev >= 100) {
-            setIsPlaying(false);
-            return 100;
-          }
-          return prev + 2;
-        });
-      }, 200);
-    }
-    return () => clearInterval(interval);
-  }, [isPlaying]);
+    return () => {
+      if (audio) {
+        audio.pause();
+      }
+    };
+  }, [isAudioPopupOpen]);
 
   if (!isAudioPopupOpen) return null;
 
@@ -59,21 +83,32 @@ export const BlackBoxAudioModal: React.FC = () => {
   const formattedFinalTime = `${m}m ${s}s`;
 
   const togglePlay = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
     if (isPlaying) {
-      soundFx.stopRadioTransmission();
+      audio.pause();
       setIsPlaying(false);
     } else {
-      soundFx.playRadioTransmission();
-      setIsPlaying(true);
-      if (playbackProgress >= 100) setPlaybackProgress(0);
+      if (playbackProgress >= 100) {
+        audio.currentTime = 0;
+        setPlaybackProgress(0);
+      }
+      audio.play().then(() => {
+        setIsPlaying(true);
+      }).catch(() => {});
     }
   };
 
   const restartPlay = () => {
-    soundFx.stopRadioTransmission();
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.currentTime = 0;
     setPlaybackProgress(0);
-    soundFx.playRadioTransmission();
-    setIsPlaying(true);
+    setCurrentTime(0);
+    audio.play().then(() => {
+      setIsPlaying(true);
+    }).catch(() => {});
   };
 
   return (
@@ -87,7 +122,10 @@ export const BlackBoxAudioModal: React.FC = () => {
         <button
           onClick={() => {
             soundFx.playClick();
-            soundFx.stopRadioTransmission();
+            if (audioRef.current) {
+              audioRef.current.pause();
+            }
+            setIsPlaying(false);
             setIsAudioPopupOpen(false);
           }}
           className="absolute top-5 right-5 p-2 text-gray-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors"
@@ -175,15 +213,26 @@ export const BlackBoxAudioModal: React.FC = () => {
 
           {/* Scrubber Bar */}
           <div className="space-y-1">
-            <div className="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
+            <div 
+              className="w-full bg-gray-800 h-2.5 rounded-full overflow-hidden cursor-pointer"
+              onClick={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const clickPos = (e.clientX - rect.left) / rect.width;
+                if (audioRef.current && duration) {
+                  audioRef.current.currentTime = clickPos * duration;
+                  setPlaybackProgress(clickPos * 100);
+                  setCurrentTime(audioRef.current.currentTime);
+                }
+              }}
+            >
               <div
-                className="bg-emerald-400 h-full transition-all duration-200"
+                className="bg-emerald-400 h-full transition-all duration-100"
                 style={{ width: `${playbackProgress}%` }}
               />
             </div>
             <div className="flex justify-between text-[10px] text-gray-400 font-mono">
-              <span>00:{Math.floor((playbackProgress * 0.15)).toString().padStart(2, '0')}</span>
-              <span>00:15 [FULL RECORDING]</span>
+              <span>{Math.floor(currentTime / 60).toString().padStart(2, '0')}:{Math.floor(currentTime % 60).toString().padStart(2, '0')}</span>
+              <span>{duration ? `${Math.floor(duration / 60).toString().padStart(2, '0')}:${Math.floor(duration % 60).toString().padStart(2, '0')}` : '03:23'} [FULL RECORDING]</span>
             </div>
           </div>
 
@@ -208,7 +257,7 @@ export const BlackBoxAudioModal: React.FC = () => {
             </div>
 
             <div className="text-xs text-gray-400 font-mono hidden sm:block">
-              FORMAT: 24-BIT PCM / 48 kHz
+              FORMAT: MP3 / 48 kHz / DUAL CHANNEL
             </div>
           </div>
         </div>
@@ -217,7 +266,7 @@ export const BlackBoxAudioModal: React.FC = () => {
         <div className="mt-5 p-4 rounded-xl bg-black/60 border border-gray-700 text-xs text-gray-300 space-y-1.5">
           <div className="text-yellow-300 font-bold tracking-wider">// CVR AUDIO TRANSCRIPT //</div>
           <div className="italic text-cyan-200">
-            &quot;Mayday, Mayday, Mayday. Flight AI-804. All systems stabilized. Emergency beacon locked on 121.5 MHz. Flight recorder telemetry secured. Safe recovery clearance granted.&quot;
+            &quot;Cactus 1549, hit birds. Lost thrust in both engines. We&apos;re returning back towards LaGuardia... Unable. We may end up in the Hudson.&quot;
           </div>
         </div>
 
@@ -231,7 +280,10 @@ export const BlackBoxAudioModal: React.FC = () => {
           <button
             onClick={() => {
               soundFx.playClick();
-              soundFx.stopRadioTransmission();
+              if (audioRef.current) {
+                audioRef.current.pause();
+              }
+              setIsPlaying(false);
               setIsAudioPopupOpen(false);
             }}
             className="w-full sm:w-auto px-6 py-3 border border-emerald-500/50 bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500 hover:text-black font-bold text-xs rounded-xl transition-all"

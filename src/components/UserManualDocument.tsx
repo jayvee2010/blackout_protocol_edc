@@ -148,25 +148,25 @@ export const UserManualDocument: React.FC = () => {
             <div>
               <div className="flex items-center gap-2">
                 <span className="px-2.5 py-0.5 bg-emerald-500 text-black font-bold text-[10px] rounded tracking-widest">
-                  CIRCUIT RECOVERY MANUAL UNLOCKED
+                  CIRCUIT TROUBLESHOOTING MANUAL UNLOCKED
                 </span>
                 <span className="text-emerald-400 text-xs font-bold tracking-widest">
-                  IEEE SB SIT PUNE // SYMBITECH
+                  SYMBIOSIS IEEE STUDENT BRANCH • SIT PUNE
                 </span>
               </div>
               <h1 className="text-2xl md:text-3xl font-bold text-white tracking-[0.15em] mt-1">
-                CIRCUIT TROUBLESHOOTING GUIDE (PAGES 1-30)
+                ARDUINO CIRCUIT TROUBLESHOOTING MANUAL
               </h1>
               <p className="text-xs text-gray-300 mt-1">
-                SYSTEM: ARDUINO-BASED ELECTRONIC CONTROL UNIT // CONSULT ZERO-HALLUCINATION AI COPILOT
+                PARTICIPANT EDITION | CIRCUIT 1 & CIRCUIT 2 // ZERO-HALLUCINATION HARDWARE COPILOT
               </p>
             </div>
           </div>
 
           <div className="text-right text-xs text-emerald-300 font-mono">
-            <div>DOC ID: SIT-IEEE-ECU-v1.0</div>
-            <div>SECURITY: BLACK BOX LEVEL-1</div>
-            <div>STATUS: DECLASSIFIED</div>
+            <div>DOC ID: SIT-IEEE-ACTM-2026</div>
+            <div>SCOPE: CIRCUIT 1 & 2</div>
+            <div>STATUS: VERIFIED</div>
           </div>
         </div>
 
@@ -181,7 +181,7 @@ export const UserManualDocument: React.FC = () => {
             >
               <div className="flex justify-between items-center border-b border-gray-700 pb-2">
                 <span className="text-sm font-bold text-blue-400 tracking-wider">
-                  RAW 30-PAGE TECHNICAL MANUAL (EDIT / EXTEND):
+                  RAW CIRCUIT TROUBLESHOOTING MANUAL (EDIT / EXTEND):
                 </span>
               </div>
 
