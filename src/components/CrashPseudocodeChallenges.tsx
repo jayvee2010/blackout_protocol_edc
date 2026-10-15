@@ -10,7 +10,6 @@ import {
   ShieldCheck, 
   ArrowRight,
   Flame,
-  Radio,
   Layers
 } from 'lucide-react';
 
@@ -104,49 +103,7 @@ export const CrashPseudocodeChallenges: React.FC<{
     }, 600);
   };
 
-  // ----------------------------------------------------
-  // CHALLENGE 3: Emergency Transponder, Beacon & Auth Token
-  // ----------------------------------------------------
-  const [c3Squawk, setC3Squawk] = useState<string>('1200');
-  const [c3Freq, setC3Freq] = useState<string>('118.00');
-  const [c3UlxFreq, setC3UlxFreq] = useState<string>('');
-  const [c3Token, setC3Token] = useState<string>('');
-  const [c3Feedback, setC3Feedback] = useState<string>('COMMUNICATION BLACKOUT: Dual flight recorder beacons offline. Transmit emergency squawk, aeronautical guard VHF, acoustic pinger frequency & token.');
-  const [c3Success, setC3Success] = useState<boolean>(false);
-
-  const verifyChallenge3 = () => {
-    if (c3Squawk !== '7700') {
-      soundFx.playError();
-      setC3Feedback('INVALID SQUAWK: International Mayday/Emergency Mode-3/A transponder code is 7700 (7500 is hijack, 7600 is radio comms failure, 1200 is VFR).');
-      return;
-    }
-    if (c3Freq !== '121.50') {
-      soundFx.playError();
-      setC3Feedback('FREQUENCY MISMATCH: The international aeronautical distress VHF guard frequency is 121.50 MHz (243.0 MHz military).');
-      return;
-    }
-    const cleanUlx = c3UlxFreq.trim();
-    if (cleanUlx !== '37.5') {
-      soundFx.playError();
-      setC3Feedback('ACOUSTIC BEACON ERROR: Underwater Locator Beacon (ULB) acoustic pulse frequency is 37.5 kHz (submersible sonar standard).');
-      return;
-    }
-
-    // Expected token: 7700-121.5-MAYDAY
-    const cleanToken = c3Token.trim().toUpperCase();
-    if (cleanToken !== '7700-121.5-MAYDAY' && cleanToken !== '7700-121-MAYDAY') {
-      soundFx.playError();
-      setC3Feedback('SYNTHESIS REJECTED: Expected telemetry token format [SQUAWK]-[GUARD_FREQ]-[DISTRESS]. For Squawk 7700 on 121.5 MHz: "7700-121.5-MAYDAY".');
-      return;
-    }
-
-    setC3Success(true);
-    setC3Feedback('BLACK BOX LOCK ACHIEVED: Transponder 7700 broadcasting. Guard 121.50 MHz active. ULB 37.5 kHz locked. ALL MODULES SUCCESSFULLY SOLVED!');
-    markChallengeSolved(3);
-    soundFx.playSuccess();
-  };
-
-  const allSolved = solvedChallenges.includes(1) && solvedChallenges.includes(2) && solvedChallenges.includes(3);
+  const allSolved = solvedChallenges.includes(1) && solvedChallenges.includes(2);
 
   return (
     <div className="w-full max-w-4xl bg-[#0f172a]/95 border-2 border-red-500 rounded-2xl p-5 md:p-7 shadow-[0_0_60px_rgba(248,113,113,0.5)] backdrop-blur-xl text-white font-mono select-none">
@@ -165,9 +122,9 @@ export const CrashPseudocodeChallenges: React.FC<{
           </div>
         </div>
 
-        {/* Modules navigation - 3 challenging modules */}
+        {/* Modules navigation - 2 challenging modules */}
         <div className="flex items-center gap-2">
-          {[1, 2, 3].map((num) => {
+          {[1, 2].map((num) => {
             const isSolved = solvedChallenges.includes(num);
             return (
               <button
@@ -456,140 +413,6 @@ export const CrashPseudocodeChallenges: React.FC<{
         </motion.div>
       )}
 
-      {/* ======================================================== */}
-      {/* MODULE 3: BEACONS, TRANSPONDER & RECOVERY TOKEN           */}
-      {/* ======================================================== */}
-      {activeTab === 3 && (
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-          <div className="bg-cyan-950/70 border border-cyan-500/60 p-3.5 rounded-xl flex items-start gap-3">
-            <Radio className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5 animate-pulse" />
-            <div className="text-xs space-y-1">
-              <span className="font-bold text-cyan-300 tracking-wider">
-                CHALLENGE 03: DISTRESS TRANSPONDER & CRASH BEACON ENCRYPTION TOKEN
-              </span>
-              <p className="text-gray-200 leading-relaxed">
-                Establish primary search & rescue broadcast. Select the international aviation emergency Mode-3/A squawk, VHF Guard channel, underwater acoustic beacon frequency, and synthesize the 3-part authorization token.
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {/* Squawk */}
-            <div className="bg-black/60 p-3.5 rounded-xl border border-cyan-500/40 space-y-2">
-              <span className="text-[11px] font-bold text-cyan-300 tracking-wider block">
-                1. SSR SQUAWK CODE:
-              </span>
-              <div className="space-y-1">
-                {[
-                  { code: '7700', label: '7700 (General Emergency / Mayday)' },
-                  { code: '7600', label: '7600 (Radio Comms Failure)' },
-                  { code: '7500', label: '7500 (Unlawful Interference / Hijack)' },
-                  { code: '1200', label: '1200 (Standard VFR Code)' }
-                ].map((item) => (
-                  <button
-                    key={item.code}
-                    onClick={() => {
-                      setC3Squawk(item.code);
-                      soundFx.playClick();
-                    }}
-                    className={`w-full p-2 rounded-lg border text-xs font-bold text-left transition-all ${
-                      c3Squawk === item.code
-                        ? 'border-emerald-400 bg-emerald-950/80 text-emerald-300'
-                        : 'border-slate-700 bg-slate-900/60 text-gray-300 hover:border-slate-500'
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* VHF Guard Frequency */}
-            <div className="bg-black/60 p-3.5 rounded-xl border border-cyan-500/40 space-y-2">
-              <span className="text-[11px] font-bold text-cyan-300 tracking-wider block">
-                2. VHF GUARD FREQUENCY:
-              </span>
-              <div className="space-y-1">
-                {[
-                  { freq: '121.50', label: '121.50 MHz (International Distress Guard)' },
-                  { freq: '118.00', label: '118.00 MHz (Local Tower Frequency)' },
-                  { freq: '136.97', label: '136.97 MHz (ACARS Data Datalink)' }
-                ].map((item) => (
-                  <button
-                    key={item.freq}
-                    onClick={() => {
-                      setC3Freq(item.freq);
-                      soundFx.playClick();
-                    }}
-                    className={`w-full p-2 rounded-lg border text-xs font-bold text-left transition-all ${
-                      c3Freq === item.freq
-                        ? 'border-emerald-400 bg-emerald-950/80 text-emerald-300'
-                        : 'border-slate-700 bg-slate-900/60 text-gray-300 hover:border-slate-500'
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* ULB Pinger Frequency */}
-            <div className="bg-black/60 p-3.5 rounded-xl border border-cyan-500/40 space-y-2">
-              <span className="text-[11px] font-bold text-cyan-300 tracking-wider block">
-                3. ULB ACOUSTIC PINGER (kHz):
-              </span>
-              <p className="text-[11px] text-gray-400">
-                Acoustic pulse frequency emitted by underwater locator beacons:
-              </p>
-              <input
-                type="text"
-                value={c3UlxFreq}
-                onChange={(e) => setC3UlxFreq(e.target.value)}
-                placeholder="e.g. 37.5"
-                className="w-full bg-black border border-cyan-400 rounded-lg px-3 py-2 text-cyan-200 text-sm font-bold outline-none text-center"
-              />
-              <span className="text-[10px] text-gray-400 block text-center">Standard: 37.5 kHz</span>
-            </div>
-          </div>
-
-          {/* Synthesis token */}
-          <div className="bg-black/70 p-4 rounded-xl border border-cyan-500/60 space-y-2">
-            <span className="text-xs font-bold text-cyan-300 tracking-wider block">
-              4. CONSTRUCT 3-PART DISTRESS AUTHORIZATION TOKEN:
-            </span>
-            <div className="text-[11px] text-gray-300">
-              Pattern: <code>[SQUAWK]-[GUARD_FREQ]-[DISTRESS_STATUS]</code> (e.g. for Squawk 7700 on 121.5 MHz):
-            </div>
-            <div className="flex items-center gap-3">
-              <input
-                type="text"
-                value={c3Token}
-                onChange={(e) => setC3Token(e.target.value)}
-                placeholder="e.g. 7700-121.5-MAYDAY"
-                className="flex-1 bg-black border-2 border-cyan-400 rounded-lg px-4 py-2 text-cyan-200 text-sm md:text-base font-bold outline-none uppercase tracking-widest placeholder:text-gray-600"
-              />
-            </div>
-          </div>
-
-          {/* Feedback & Verify */}
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-2">
-            <div className={`text-xs p-3.5 rounded-xl border flex-1 w-full font-bold ${
-              c3Success ? 'bg-emerald-950/90 border-emerald-400 text-emerald-200' : 'bg-cyan-950/80 border-cyan-500/60 text-cyan-200'
-            }`}>
-              {c3Feedback}
-            </div>
-
-            <button
-              onClick={verifyChallenge3}
-              className="w-full sm:w-auto px-7 py-3.5 bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs tracking-widest rounded-xl shadow-[0_0_20px_rgba(6,182,212,0.7)] flex items-center justify-center gap-2 transition-all hover:scale-105 shrink-0"
-            >
-              <Play size={15} />
-              <span>TRANSMIT & ARM FDR BEACON</span>
-            </button>
-          </div>
-        </motion.div>
-      )}
-
       {/* PRIZE UNLOCK BANNER */}
       {allSolved && (
         <motion.div
@@ -601,10 +424,10 @@ export const CrashPseudocodeChallenges: React.FC<{
             <ShieldCheck className="w-9 h-9 text-emerald-400 shrink-0" />
             <div>
               <div className="text-sm md:text-base font-bold text-emerald-300 tracking-wider">
-                ALL 3 FLIGHT DIAGNOSTIC MODULES RESOLVED!
+                ALL FLIGHT DIAGNOSTIC MODULES RESOLVED!
               </div>
               <div className="text-xs text-emerald-100">
-                OFFICIAL 30-PAGE CIRCUIT USER MANUAL & AI TROUBLESHOOTING COPILOT ARE UNLOCKED.
+                CIRCUIT USER MANUAL & HARDWARE TROUBLESHOOTING COPILOT ARE UNLOCKED.
               </div>
             </div>
           </div>
