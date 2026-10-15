@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useStore } from '../store/useStore';
 import { soundFx } from '../lib/audio';
@@ -8,11 +8,10 @@ import {
   Terminal, 
   Play, 
   ShieldCheck, 
-  Flame, 
-  Keyboard, 
   ArrowRight,
-  Calculator,
-  Lock
+  Flame,
+  Radio,
+  Layers
 } from 'lucide-react';
 
 export const CrashPseudocodeChallenges: React.FC<{
@@ -20,159 +19,129 @@ export const CrashPseudocodeChallenges: React.FC<{
 }> = ({ onAllCompleted }) => {
   const { 
     solvedChallenges, 
-    markChallengeSolved, 
-    setCockpitAttitude 
+    markChallengeSolved 
   } = useStore();
 
   const [activeTab, setActiveTab] = useState<number>(1);
 
   // ----------------------------------------------------
-  // CHALLENGE 1 STATE: Stall & Compressor Surge Recovery
+  // CHALLENGE 1: Stall & Compressor Surge Recovery Matrix
   // ----------------------------------------------------
-  const [c1YokeAction, setC1YokeAction] = useState<string>('PULL_UP');
-  const [c1ThrustSequence, setC1ThrustSequence] = useState<string>('MAX_TOGA_IMMEDIATE');
-  const [c1Slats, setC1Slats] = useState<string>('CLEAN_WING_NO_SLATS');
-  const [c1TypedCode, setC1TypedCode] = useState<string>('');
-  const [c1Feedback, setC1Feedback] = useState<string>('STALL WARNING ACTIVE: Telemetry indicates AOA +22.4° at 126 KIAS. Configure recovery logic.');
+  const [c1YokeAction, setC1YokeAction] = useState<string>('');
+  const [c1ThrustSequence, setC1ThrustSequence] = useState<string>('');
+  const [c1Slats, setC1Slats] = useState<string>('');
+  const [c1AoAThreshold, setC1AoAThreshold] = useState<string>('');
+  const [c1Feedback, setC1Feedback] = useState<string>('WARNING: Stall warning shaker active at 128 KIAS with AOA +24.6°. Formulate anti-stall flight law sequence.');
   const [c1Success, setC1Success] = useState<boolean>(false);
 
-
-
   const verifyChallenge1 = () => {
-  // Simplified verification: any non‑empty code passes.
-  if (!c1TypedCode.trim()) {
-    setC1Feedback('Please type the recovery command.');
-    setC1Success(false);
-    soundFx.playError();
-    return;
-  }
-  setC1Success(true);
-  setC1Feedback('SUCCESS: Challenge completed quickly.');
-  markChallengeSolved(1);
-  soundFx.playSuccess();
-};
-  
-  
-
-  
-  
-
-
-
-
-
-  // CHALLENGE 2 STATE: CG & Fuel Jettison Mathematics
-  // ----------------------------------------------------
-  const [c2LoopCondition, setC2LoopCondition] = useState<string>('WHILE (gross_weight < 65000_KG)');
-  const [c2Crossfeed, setC2Crossfeed] = useState<string>('ISOLATED_CLOSED');
-  const [c2TypedSeconds, setC2TypedSeconds] = useState<string>('');
-  const [currentWeight, setCurrentWeight] = useState<number>(78500);
-  const [isDumping, setIsDumping] = useState<boolean>(false);
-  const [c2Success, setC2Success] = useState<boolean>(false);
-  const [c2Feedback, setC2Feedback] = useState<string>('GROSS WEIGHT: 78,500 KG. Maximum Structural Landing Weight: 65,000 KG. Compute required jettison time.');
-
-  useEffect(() => {
-    let interval: ReturnType<typeof setInterval>;
-    if (isDumping) {
-      interval = setInterval(() => {
-        setCurrentWeight((prev) => {
-          const next = Math.max(65000, prev - 6000);
-          if (next <= 65000) {
-            setIsDumping(false);
-            setC2Success(true);
-            setC2Feedback('JETTISON SUCCESS: Fuel dumped quickly.');
-            markChallengeSolved(2);
-            soundFx.playSuccess();
-          }
-          return next;
-        });
-      }, 20);
-    }
-    return () => clearInterval(interval);
-    if (isDumping) {
-      interval = setInterval(() => {
-        setCurrentWeight((prev) => {
-          const next = Math.max(65000, prev - 1200);
-          if (next <= 65000) {
-            setIsDumping(false);
-            setC2Success(true);
-            setC2Feedback('JETTISON SUCCESS: Exactly 13,500 KG dumped in 54 seconds. Aircraft at 65,000 KG MLW. MODULE 02 CLEARED.');
-            markChallengeSolved(2);
-            soundFx.playSuccess();
-          }
-          return next;
-        });
-      }, 120);
-    }
-    return () => clearInterval(interval);
-  }, [isDumping, markChallengeSolved]);
-
-  const verifyChallenge2 = () => {
-    // Required calculation: (78500 - 65000) / 250 = 13500 / 250 = 54 seconds
-    const parsedSeconds = parseInt(c2TypedSeconds.trim(), 10);
-
-    if (parsedSeconds !== 54) {
+    if (c1YokeAction !== 'PUSH_DOWN_REDUCE_AOA') {
       soundFx.playError();
-      setC2Feedback('CALCULATION ERROR: Fuel to dump = 78,500 - 65,000 = 13,500 KG. At flow rate 250 KG/s, calculate (13,500 / 250) and enter the exact seconds.');
+      setC1Feedback('AERODYNAMIC FAILURE: Pulling up or maintaining level yoke deepens aerodynamic stall. Control column must be pushed NOSE-DOWN to reduce AOA below critical angle.');
+      return;
+    }
+    if (c1ThrustSequence !== 'TOGA_DELAYED_SURGE_PREVENTION') {
+      soundFx.playError();
+      setC1Feedback('COMPRESSOR SURGE / FLAMEOUT: Slamming immediate TOGA at extreme AOA causes catastrophic turbine surge. Spool TOGA progressively once AOA reduces below 14°.');
+      return;
+    }
+    if (c1Slats !== 'DEPLOY_SLATS_EXTENDED') {
+      soundFx.playError();
+      setC1Feedback('BOUNDARY LAYER SEPARATION: Leading edge slats must be EXTENDED to re-energize boundary layer airflow over the wings.');
+      return;
+    }
+    const parsedAoa = parseFloat(c1AoAThreshold.trim());
+    if (isNaN(parsedAoa) || parsedAoa < 12 || parsedAoa > 16) {
+      soundFx.playError();
+      setC1Feedback('THRESHOLD ERROR: Specify target recovery AOA between 12.0° and 16.0° to balance stall recovery with ground obstacle clearance.');
       return;
     }
 
-    if (c2LoopCondition !== 'WHILE (gross_weight > 65000_KG)') {
-      soundFx.playError();
-      setC2Feedback('LOGIC ERROR: The dump valves must stay open WHILE gross_weight is GREATER than 65,000 KG.');
-      return;
-    }
-
-    if (c2Crossfeed !== 'BALANCED_OPEN') {
-      soundFx.playError();
-      setC2Feedback('LATERAL IMBALANCE: Crossfeed manifold must be set to BALANCED_OPEN to prevent dangerous fuel weight asymmetry between wings.');
-      return;
-    }
-
-    soundFx.playClick();
-    setIsDumping(true);
-    setC2Feedback('PUMPS ENGAGED: Jettisoning 13,500 KG of fuel at 250 KG/s. Active flow monitoring...');
+    setC1Success(true);
+    setC1Feedback('EXCELLENT: Anti-stall flight law compiled! Airflow re-attached, turbine surge mitigated, airspeed climbing past 175 KIAS. MODULE 01 CLEARED.');
+    markChallengeSolved(1);
+    soundFx.playSuccess();
   };
 
   // ----------------------------------------------------
-  // CHALLENGE 3 STATE: Black Box Checksum & Hex Token
+  // CHALLENGE 2: CG & Differential Fuel Jettison Telemetry
+  // ----------------------------------------------------
+  const [c2Crossfeed, setC2Crossfeed] = useState<string>('ISOLATED');
+  const [c2TypedSeconds, setC2TypedSeconds] = useState<string>('');
+  const [c2LoopCondition, setC2LoopCondition] = useState<string>('');
+  const [c2Feedback, setC2Feedback] = useState<string>('OVERWEIGHT DITCH RISK: Current Gross Weight: 84,200 KG. Maximum Structural Landing Weight (MLW): 65,000 KG. Dual manifold rate: 320 KG/s total. Calculate exact seconds.');
+  const [c2Success, setC2Success] = useState<boolean>(false);
+  const [isDumping, setIsDumping] = useState<boolean>(false);
+
+  // Exact math: 84,200 - 65,000 = 19,200 KG to jettison.
+  // 19,200 / 320 KG/s = exactly 60 seconds!
+  const verifyChallenge2 = () => {
+    const parsed = parseInt(c2TypedSeconds.trim(), 10);
+    if (parsed !== 60) {
+      soundFx.playError();
+      setC2Feedback('CALCULATION ERROR: Fuel to dump = 84,200 KG - 65,000 KG = 19,200 KG. Divided by dual-pump flow rate 320 KG/s. Compute (19,200 / 320) and enter integer seconds.');
+      return;
+    }
+    if (c2Crossfeed !== 'CROSSFEED_BALANCED_OPEN') {
+      soundFx.playError();
+      setC2Feedback('LATERAL INSTABILITY: Crossfeed valve must be BALANCED_OPEN to equalize hydrostatic head and avoid dangerous roll moment between wing tanks.');
+      return;
+    }
+    if (c2LoopCondition !== 'WHILE (current_weight > 65000_KG)') {
+      soundFx.playError();
+      setC2Feedback('CONTROL LOOP FLAW: Select the termination condition that halts jettison exactly at 65,000 KG.');
+      return;
+    }
+
+    setIsDumping(true);
+    soundFx.playClick();
+    setTimeout(() => {
+      setIsDumping(false);
+      setC2Success(true);
+      setC2Feedback('TELEMETRY VALIDATED: 19,200 KG jettisoned in exactly 60s. Center of Gravity (CG) within 28.4% MAC envelope. MODULE 02 CLEARED.');
+      markChallengeSolved(2);
+      soundFx.playSuccess();
+    }, 600);
+  };
+
+  // ----------------------------------------------------
+  // CHALLENGE 3: Emergency Transponder, Beacon & Auth Token
   // ----------------------------------------------------
   const [c3Squawk, setC3Squawk] = useState<string>('1200');
-  const [c3Freq, setC3Freq] = useState<string>('118.0');
-  const [c3CsmuMode, setC3CsmuMode] = useState<string>('STANDBY');
-  const [c3TypedToken, setC3TypedToken] = useState<string>('');
-  const [c3Feedback, setC3Feedback] = useState<string>('BLACK BOX BEACON OFFLINE: Transmit international distress squawk, guard channel, and construct authorization token.');
+  const [c3Freq, setC3Freq] = useState<string>('118.00');
+  const [c3UlxFreq, setC3UlxFreq] = useState<string>('');
+  const [c3Token, setC3Token] = useState<string>('');
+  const [c3Feedback, setC3Feedback] = useState<string>('COMMUNICATION BLACKOUT: Dual flight recorder beacons offline. Transmit emergency squawk, aeronautical guard VHF, acoustic pinger frequency & token.');
   const [c3Success, setC3Success] = useState<boolean>(false);
 
   const verifyChallenge3 = () => {
     if (c3Squawk !== '7700') {
       soundFx.playError();
-      setC3Feedback('INVALID SQUAWK: International Mayday/General Emergency transponder code is 7700 (7500 is hijack, 7600 is radio comms failure, 1200 is VFR).');
+      setC3Feedback('INVALID SQUAWK: International Mayday/Emergency Mode-3/A transponder code is 7700 (7500 is hijack, 7600 is radio comms failure, 1200 is VFR).');
+      return;
+    }
+    if (c3Freq !== '121.50') {
+      soundFx.playError();
+      setC3Feedback('FREQUENCY MISMATCH: The international aeronautical distress VHF guard frequency is 121.50 MHz (243.0 MHz military).');
+      return;
+    }
+    const cleanUlx = c3UlxFreq.trim();
+    if (cleanUlx !== '37.5') {
+      soundFx.playError();
+      setC3Feedback('ACOUSTIC BEACON ERROR: Underwater Locator Beacon (ULB) acoustic pulse frequency is 37.5 kHz (submersible sonar standard).');
       return;
     }
 
-    if (c3Freq !== '121.5') {
+    // Expected token: 7700-121.5-MAYDAY
+    const cleanToken = c3Token.trim().toUpperCase();
+    if (cleanToken !== '7700-121.5-MAYDAY' && cleanToken !== '7700-121-MAYDAY') {
       soundFx.playError();
-      setC3Feedback('INVALID FREQUENCY: International aeronautical emergency VHF guard frequency is 121.5 MHz.');
-      return;
-    }
-
-    if (c3CsmuMode !== 'ARMORED_TITANIUM_LOCK') {
-      soundFx.playError();
-      setC3Feedback('CRASH SURVIVABILITY FAILED: CSMU memory requires ARMORED_TITANIUM_LOCK to survive 3,400 G impact deceleration.');
-      return;
-    }
-
-    // Token format: 7700-121-MAYDAY
-    const cleanToken = c3TypedToken.trim().toUpperCase();
-    if (cleanToken !== '7700-121-MAYDAY') {
-      soundFx.playError();
-      setC3Feedback('SECURITY TOKEN REJECTED: Expected format [SQUAWK]-[FREQ_INT]-[STATUS]. For Squawk 7700 on 121.5 MHz, type: 7700-121-MAYDAY.');
+      setC3Feedback('SYNTHESIS REJECTED: Expected telemetry token format [SQUAWK]-[GUARD_FREQ]-[DISTRESS]. For Squawk 7700 on 121.5 MHz: "7700-121.5-MAYDAY".');
       return;
     }
 
     setC3Success(true);
-    setC3Feedback('BEACON LOCKED: Squawk 7700 broadcasting on 121.5 MHz. Dual CVR/FDR units secured at 37.5 kHz. ALL OBJECTIVES COMPLETE!');
+    setC3Feedback('BLACK BOX LOCK ACHIEVED: Transponder 7700 broadcasting. Guard 121.50 MHz active. ULB 37.5 kHz locked. ALL MODULES SUCCESSFULLY SOLVED!');
     markChallengeSolved(3);
     soundFx.playSuccess();
   };
@@ -180,24 +149,24 @@ export const CrashPseudocodeChallenges: React.FC<{
   const allSolved = solvedChallenges.includes(1) && solvedChallenges.includes(2) && solvedChallenges.includes(3);
 
   return (
-    <div className="w-full max-w-5xl bg-[#0f172a]/95 border-2 border-red-400 rounded-2xl p-6 md:p-8 shadow-[0_0_60px_rgba(248,113,113,0.5)] backdrop-blur-xl text-white font-mono select-none">
+    <div className="w-full max-w-4xl bg-[#0f172a]/95 border-2 border-red-500 rounded-2xl p-5 md:p-7 shadow-[0_0_60px_rgba(248,113,113,0.5)] backdrop-blur-xl text-white font-mono select-none">
       
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b-2 border-red-500/50 pb-5 mb-6 gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b-2 border-red-500/50 pb-4 mb-5 gap-3">
         <div className="flex items-center gap-3">
-          <Terminal className="text-red-400 w-8 h-8 animate-pulse shrink-0" />
+          <Terminal className="text-red-400 w-7 h-7 animate-pulse shrink-0" />
           <div>
-            <h2 className="text-xl md:text-2xl font-bold tracking-[0.2em] text-white drop-shadow-[0_0_12px_rgba(248,113,113,0.9)]">
-              FLIGHT 804 // CRASH DIAGNOSTIC CONSOLE
+            <h2 className="text-lg md:text-xl font-bold tracking-[0.2em] text-white drop-shadow-[0_0_12px_rgba(248,113,113,0.9)]">
+              FLIGHT AI-804 // CRASH DIAGNOSTIC CONSOLE
             </h2>
-            <p className="text-xs md:text-sm text-cyan-300 tracking-wider">
-              CRITICAL EMERGENCY AVIATION LOGIC ARCHITECTURE
+            <p className="text-xs text-cyan-300 tracking-wider">
+              MULTI-STAGE AVIONIC PSEUDOCODE SYSTEM DIAGNOSTICS (ESTIMATED: 5-6 MIN)
             </p>
           </div>
         </div>
 
-        {/* Modules navigation */}
-        <div className="flex items-center gap-3">
+        {/* Modules navigation - 3 challenging modules */}
+        <div className="flex items-center gap-2">
           {[1, 2, 3].map((num) => {
             const isSolved = solvedChallenges.includes(num);
             return (
@@ -207,7 +176,7 @@ export const CrashPseudocodeChallenges: React.FC<{
                   setActiveTab(num);
                   soundFx.playClick();
                 }}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 text-xs md:text-sm font-bold transition-all shadow-md ${
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl border-2 text-xs font-bold transition-all shadow-md ${
                   activeTab === num
                     ? 'border-red-400 bg-red-600 text-white shadow-[0_0_20px_rgba(239,68,68,0.7)] scale-105'
                     : isSolved
@@ -215,7 +184,7 @@ export const CrashPseudocodeChallenges: React.FC<{
                     : 'border-slate-600 bg-slate-800/90 text-slate-300 hover:border-slate-400'
                 }`}
               >
-                {isSolved ? <CheckCircle2 size={16} className="text-emerald-400" /> : <AlertOctagon size={16} />}
+                {isSolved ? <CheckCircle2 size={15} className="text-emerald-400" /> : <AlertOctagon size={15} />}
                 <span>MODULE 0{num}</span>
               </button>
             );
@@ -227,25 +196,30 @@ export const CrashPseudocodeChallenges: React.FC<{
       {/* MODULE 1: STALL RECOVERY & COMPRESSOR SURGE PREVENTION   */}
       {/* ======================================================== */}
       {activeTab === 1 && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
-          <div className="bg-red-950/70 border-2 border-red-500/60 p-4 rounded-xl flex items-start gap-3">
-            <Flame className="w-6 h-6 text-red-400 shrink-0 mt-0.5 animate-bounce" />
-            <div className="text-xs md:text-sm text-red-100 font-semibold leading-relaxed">
-              <span className="font-bold text-red-300">SCENARIO:</span> Aircraft in deep aerodynamic stall at FL240. Pitch +16°, Angle of Attack +22.4°, Airspeed 126 KIAS. You must resolve elevator action, engine spool sequence (compressor surge avoidance), wing slats, and type the exact executive function call!
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+          <div className="bg-red-950/70 border border-red-500/60 p-3.5 rounded-xl flex items-start gap-3">
+            <Flame className="w-5 h-5 text-red-400 shrink-0 mt-0.5 animate-pulse" />
+            <div className="text-xs space-y-1">
+              <span className="font-bold text-red-300 tracking-wider">
+                CHALLENGE 01: AERODYNAMIC STALL LAW & COMPRESSOR SURGE MITIGATION
+              </span>
+              <p className="text-gray-200 leading-relaxed">
+                Telemetry indicates AOA +24.6° at 128 KIAS. Stick shaker active. You must construct the flight computer anti-stall algorithm to avoid deep stall and catastrophic high-AOA turbine compressor stalls.
+              </p>
             </div>
           </div>
 
-          <div className="bg-[#111c33] border-2 border-cyan-400/50 rounded-xl p-5 md:p-6 font-mono text-sm shadow-2xl leading-relaxed space-y-4">
-            <div className="text-cyan-300 font-bold">// Specification 1.1: Multi-Stage Anti-Stall Law //</div>
-            
-            {/* Condition 1: Elevator Column */}
-            <div>
-              <div className="text-yellow-300 font-bold mb-1.5">1. CONTROL COLUMN ELEVATOR COMMAND:</div>
-              <div className="flex flex-wrap gap-2.5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {/* Step 1: Pitch Control */}
+            <div className="bg-black/60 p-3.5 rounded-xl border border-cyan-500/40 space-y-2">
+              <span className="text-[11px] font-bold text-cyan-300 tracking-wider block">
+                1. ELEVATOR / CONTROL COLUMN LOGIC:
+              </span>
+              <div className="space-y-1.5">
                 {[
-                  { id: 'PUSH_NOSE_DOWN', label: 'PUSH_NOSE_DOWN (Reduce AOA below stall limit)' },
-                  { id: 'PULL_UP', label: 'PULL_UP (Try to maintain altitude)' },
-                  { id: 'HOLD_NEUTRAL', label: 'HOLD_NEUTRAL (Wings level only)' },
+                  { id: 'PUSH_DOWN_REDUCE_AOA', label: 'PUSH NOSE-DOWN (Break critical stall AOA)' },
+                  { id: 'PULL_UP_INCREASE_ALT', label: 'PULL UP (Attempt emergency altitude gain)' },
+                  { id: 'MAINTAIN_LEVEL', label: 'HOLD NEUTRAL (Wait for airspeed recovery)' }
                 ].map((opt) => (
                   <button
                     key={opt.id}
@@ -253,10 +227,10 @@ export const CrashPseudocodeChallenges: React.FC<{
                       setC1YokeAction(opt.id);
                       soundFx.playClick();
                     }}
-                    className={`px-3 py-2 rounded-lg text-xs md:text-sm font-bold border-2 transition-all ${
+                    className={`w-full p-2.5 rounded-lg border text-xs font-bold text-left transition-all ${
                       c1YokeAction === opt.id
-                        ? 'bg-cyan-500 text-black border-white shadow-[0_0_15px_#06b6d4]'
-                        : 'bg-black/60 text-gray-300 border-gray-700 hover:border-gray-500'
+                        ? 'border-emerald-400 bg-emerald-950/80 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.4)]'
+                        : 'border-slate-700 bg-slate-900/60 text-gray-300 hover:border-slate-500'
                     }`}
                   >
                     {opt.label}
@@ -265,14 +239,16 @@ export const CrashPseudocodeChallenges: React.FC<{
               </div>
             </div>
 
-            {/* Condition 2: Engine Throttle Sequence */}
-            <div>
-              <div className="text-yellow-300 font-bold mb-1.5">2. ENGINE SPOOL-UP SEQUENCE (COMPRESSOR STALL LAW):</div>
-              <div className="flex flex-wrap gap-2.5">
+            {/* Step 2: Thrust Management */}
+            <div className="bg-black/60 p-3.5 rounded-xl border border-cyan-500/40 space-y-2">
+              <span className="text-[11px] font-bold text-cyan-300 tracking-wider block">
+                2. AUTOTHROTTLE & ENGINE SURGE LOGIC:
+              </span>
+              <div className="space-y-1.5">
                 {[
-                  { id: 'MAX_TOGA_IMMEDIATE', label: 'MAX_TOGA_IMMEDIATE (Full power right away)' },
-                  { id: 'AWAIT_AOA_BELOW_12_BEFORE_TOGA', label: 'AWAIT_AOA_BELOW_12_BEFORE_TOGA (Prevent intake airflow distortion)' },
-                  { id: 'IDLE_THROUGHOUT_RECOVERY', label: 'IDLE_THROUGHOUT_RECOVERY (Glide down without engine power)' },
+                  { id: 'TOGA_IMMEDIATE_FULL', label: 'IMMEDIATE TOGA (Instant 100% full thrust)' },
+                  { id: 'TOGA_DELAYED_SURGE_PREVENTION', label: 'SPOOL TOGA PROGRESSIVELY (Prevent surge flameout)' },
+                  { id: 'IDLE_SHUTDOWN', label: 'IDLE CUT-OFF (Zero fuel burn)' }
                 ].map((opt) => (
                   <button
                     key={opt.id}
@@ -280,10 +256,10 @@ export const CrashPseudocodeChallenges: React.FC<{
                       setC1ThrustSequence(opt.id);
                       soundFx.playClick();
                     }}
-                    className={`px-3 py-2 rounded-lg text-xs md:text-sm font-bold border-2 transition-all ${
+                    className={`w-full p-2.5 rounded-lg border text-xs font-bold text-left transition-all ${
                       c1ThrustSequence === opt.id
-                        ? 'bg-emerald-500 text-black border-white shadow-[0_0_15px_#10b981]'
-                        : 'bg-black/60 text-gray-300 border-gray-700 hover:border-gray-500'
+                        ? 'border-emerald-400 bg-emerald-950/80 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.4)]'
+                        : 'border-slate-700 bg-slate-900/60 text-gray-300 hover:border-slate-500'
                     }`}
                   >
                     {opt.label}
@@ -292,14 +268,15 @@ export const CrashPseudocodeChallenges: React.FC<{
               </div>
             </div>
 
-            {/* Condition 3: Wing Slats Configuration */}
-            <div>
-              <div className="text-yellow-300 font-bold mb-1.5">3. WING BOUNDARY LAYER CONFIGURATION:</div>
-              <div className="flex flex-wrap gap-2.5">
+            {/* Step 3: High-Lift Devices */}
+            <div className="bg-black/60 p-3.5 rounded-xl border border-cyan-500/40 space-y-2">
+              <span className="text-[11px] font-bold text-cyan-300 tracking-wider block">
+                3. WING HIGH-LIFT RECOVERY DEVICE:
+              </span>
+              <div className="space-y-1.5">
                 {[
-                  { id: 'EXTEND_LEADING_EDGE_SLATS', label: 'EXTEND_LEADING_EDGE_SLATS (Re-energize boundary layer lift)' },
-                  { id: 'FULL_FLAPS_40_DEGREES', label: 'FULL_FLAPS_40_DEGREES (Maximum surface deflection)' },
-                  { id: 'CLEAN_WING_NO_SLATS', label: 'CLEAN_WING_NO_SLATS (Retract all surfaces)' },
+                  { id: 'DEPLOY_SLATS_EXTENDED', label: 'DEPLOY LEADING-EDGE SLATS (Re-energize airflow)' },
+                  { id: 'RETRACT_CLEAN_WING', label: 'RETRACT ALL FLAPS/SLATS (Reduce parasitic drag)' }
                 ].map((opt) => (
                   <button
                     key={opt.id}
@@ -307,10 +284,10 @@ export const CrashPseudocodeChallenges: React.FC<{
                       setC1Slats(opt.id);
                       soundFx.playClick();
                     }}
-                    className={`px-3 py-2 rounded-lg text-xs md:text-sm font-bold border-2 transition-all ${
+                    className={`w-full p-2.5 rounded-lg border text-xs font-bold text-left transition-all ${
                       c1Slats === opt.id
-                        ? 'bg-amber-400 text-black border-white shadow-[0_0_15px_#f59e0b]'
-                        : 'bg-black/60 text-gray-300 border-gray-700 hover:border-gray-500'
+                        ? 'border-emerald-400 bg-emerald-950/80 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.4)]'
+                        : 'border-slate-700 bg-slate-900/60 text-gray-300 hover:border-slate-500'
                     }`}
                   >
                     {opt.label}
@@ -319,38 +296,40 @@ export const CrashPseudocodeChallenges: React.FC<{
               </div>
             </div>
 
-            {/* Mandatory Typing Code Line */}
-            <div className="mt-4 pt-3 border-t border-cyan-500/40 bg-black/70 p-3.5 rounded-xl border">
-              <div className="flex items-center gap-2 text-white font-bold text-xs md:text-sm mb-1">
-                <Keyboard size={16} className="text-cyan-400" />
-                <span>TYPE EXECUTIVE FUNCTION CALL: <code className="text-yellow-300 bg-black px-2 py-0.5 rounded border border-yellow-500/40">execute_recovery(NOSE_DOWN, TOGA)</code></span>
-              </div>
-              <div className="flex items-center gap-2 mt-2">
-                <span className="text-emerald-400 font-bold text-lg">&gt;</span>
+            {/* Step 4: Numerical Boundary Parameter */}
+            <div className="bg-black/60 p-3.5 rounded-xl border border-cyan-500/40 space-y-2">
+              <span className="text-[11px] font-bold text-cyan-300 tracking-wider block">
+                4. TARGET RECOVERY AOA THRESHOLD (DEGREES):
+              </span>
+              <p className="text-[11px] text-gray-400">
+                Enter critical safe angle threshold in degrees (Allowed: 12.0° to 16.0°):
+              </p>
+              <div className="flex items-center gap-2">
                 <input
                   type="text"
-                  value={c1TypedCode}
-                  onChange={(e) => setC1TypedCode(e.target.value)}
-                  placeholder="Type: execute_recovery(NOSE_DOWN, TOGA)"
-                  className="flex-1 bg-black/90 border-2 border-cyan-400/80 rounded-lg px-4 py-2.5 text-cyan-200 text-sm md:text-base font-bold outline-none focus:border-white tracking-wider"
+                  value={c1AoAThreshold}
+                  onChange={(e) => setC1AoAThreshold(e.target.value)}
+                  placeholder="e.g. 14.0"
+                  className="w-32 bg-black border border-cyan-400 rounded-lg px-3 py-2 text-cyan-200 text-sm font-bold outline-none text-center"
                 />
+                <span className="text-xs text-gray-300">degrees (AOA target)</span>
               </div>
             </div>
           </div>
 
-          {/* Feedback & Verify Button */}
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-2">
-            <div className={`text-xs md:text-sm p-4 rounded-xl border-2 flex-1 w-full font-bold ${
-              c1Success ? 'bg-emerald-950/90 border-emerald-400 text-emerald-200' : 'bg-red-950/90 border-red-400 text-red-200'
+          {/* Feedback & Action */}
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-2">
+            <div className={`text-xs p-3.5 rounded-xl border flex-1 w-full font-bold ${
+              c1Success ? 'bg-emerald-950/90 border-emerald-400 text-emerald-200' : 'bg-red-950/80 border-red-500/60 text-red-200'
             }`}>
               {c1Feedback}
             </div>
 
             <button
               onClick={verifyChallenge1}
-              className="w-full sm:w-auto px-8 py-4 bg-red-600 hover:bg-red-500 text-white font-bold text-sm tracking-widest rounded-xl shadow-[0_0_25px_rgba(239,68,68,0.7)] flex items-center justify-center gap-2 transition-all hover:scale-105"
+              className="w-full sm:w-auto px-7 py-3.5 bg-red-600 hover:bg-red-500 text-white font-bold text-xs tracking-widest rounded-xl shadow-[0_0_20px_rgba(239,68,68,0.7)] flex items-center justify-center gap-2 transition-all hover:scale-105 shrink-0"
             >
-              <Play size={16} />
+              <Play size={15} />
               <span>TEST RECOVERY CODE</span>
             </button>
           </div>
@@ -358,93 +337,34 @@ export const CrashPseudocodeChallenges: React.FC<{
       )}
 
       {/* ======================================================== */}
-      {/* MODULE 2: CG & FUEL JETTISON MATHEMATICS                 */}
+      {/* MODULE 2: CG & DIFFERENTIAL FUEL JETTISON MATHEMATICS     */}
       {/* ======================================================== */}
       {activeTab === 2 && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
-          <div className="bg-amber-950/70 border-2 border-amber-500/60 p-4 rounded-xl flex items-start gap-3">
-            <Calculator className="w-6 h-6 text-amber-400 shrink-0 mt-0.5" />
-            <div className="text-xs md:text-sm text-amber-100 font-semibold leading-relaxed">
-              <span className="font-bold text-amber-300">SCENARIO:</span> Aircraft gross weight is 78,500 KG. Maximum Structural Landing Weight (MLSW) is 65,000 KG. Dual dump nozzles discharge at a combined flow rate of 250 KG/second. Compute exact seconds needed and configure manifold!
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+          <div className="bg-yellow-950/70 border border-yellow-500/60 p-3.5 rounded-xl flex items-start gap-3">
+            <Layers className="w-5 h-5 text-yellow-400 shrink-0 mt-0.5 animate-pulse" />
+            <div className="text-xs space-y-1">
+              <span className="font-bold text-yellow-300 tracking-wider">
+                CHALLENGE 02: EMERGENCY WEIGHT SHEDDING & CROSSFEED MANIFOLD BALANCING
+              </span>
+              <p className="text-gray-200 leading-relaxed">
+                Aircraft Gross Weight: <strong>84,200 KG</strong>. Maximum Landing Weight (MLW): <strong>65,000 KG</strong>.<br />
+                Dual wing jettison pump system pumps at a combined flow rate of <strong>320 KG/second</strong>.<br />
+                Calculate the required jettison time and configure hydraulic crossfeed valves to prevent asymmetric wing flutter.
+              </p>
             </div>
           </div>
 
-          <div className="bg-[#111c33] border-2 border-amber-400/50 rounded-xl p-5 md:p-6 font-mono text-sm shadow-2xl space-y-4">
-            
-            {/* Weight Status */}
-            <div className="flex flex-wrap justify-between items-center bg-black/70 p-3.5 rounded-xl border border-gray-700">
-              <div>
-                <span className="text-gray-400 text-xs">CURRENT GROSS WEIGHT:</span>
-                <div className={`text-2xl font-bold tracking-widest ${currentWeight <= 65000 ? 'text-emerald-400' : 'text-red-400'}`}>
-                  {currentWeight.toLocaleString()} KG
-                </div>
-              </div>
-              <div className="text-right">
-                <span className="text-gray-400 text-xs">TARGET MLSW:</span>
-                <div className="text-2xl font-bold text-white tracking-widest">
-                  65,000 KG
-                </div>
-              </div>
-              <div className="text-right border-l border-gray-700 pl-4">
-                <span className="text-gray-400 text-xs">EXCESS FUEL TO JETTISON:</span>
-                <div className="text-2xl font-bold text-amber-400 tracking-widest">
-                  13,500 KG
-                </div>
-              </div>
-            </div>
-
-            {/* Math Input Field */}
-            <div className="bg-black/70 p-4 rounded-xl border-2 border-yellow-400/60">
-              <div className="text-yellow-300 font-bold text-xs md:text-sm mb-1">
-                COMPUTE JETTISON DURATION: Time = 13,500 KG / 250 KG/s
-              </div>
-              <div className="flex items-center gap-3 mt-2">
-                <span className="text-cyan-300 font-bold">TYPE COMPUTED SECONDS:</span>
-                <input
-                  type="text"
-                  value={c2TypedSeconds}
-                  onChange={(e) => setC2TypedSeconds(e.target.value)}
-                  placeholder="Enter seconds..."
-                  className="w-36 bg-black border-2 border-yellow-400 rounded-lg px-4 py-2 text-yellow-300 text-base font-bold outline-none text-center"
-                />
-                <span className="text-gray-400 text-xs">SECONDS (Formula: Excess / 250)</span>
-              </div>
-            </div>
-
-            {/* Loop Condition Selector */}
-            <div>
-              <div className="text-white font-bold mb-1.5">WHILE LOOP TERMINATION CRITERIA:</div>
-              <div className="flex flex-wrap gap-2.5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {/* Crossfeed Logic */}
+            <div className="bg-black/60 p-3.5 rounded-xl border border-cyan-500/40 space-y-2">
+              <span className="text-[11px] font-bold text-cyan-300 tracking-wider block">
+                1. FUEL CROSSFEED MANIFOLD STATE:
+              </span>
+              <div className="space-y-1.5">
                 {[
-                  'WHILE (gross_weight > 65000_KG)',
-                  'WHILE (gross_weight < 65000_KG)',
-                  'WHILE (gross_weight == 0_KG)',
-                ].map((opt) => (
-                  <button
-                    key={opt}
-                    onClick={() => {
-                      setC2LoopCondition(opt);
-                      soundFx.playClick();
-                    }}
-                    className={`px-3 py-2 rounded-lg text-xs md:text-sm font-bold border-2 transition-all ${
-                      c2LoopCondition === opt
-                        ? 'bg-amber-400 text-black border-white shadow-[0_0_15px_#f59e0b]'
-                        : 'bg-black/60 text-gray-300 border-gray-700 hover:border-gray-500'
-                    }`}
-                  >
-                    {opt}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Crossfeed Balance */}
-            <div>
-              <div className="text-white font-bold mb-1.5">LATERAL FUEL MANIFOLD BALANCING:</div>
-              <div className="flex flex-wrap gap-2.5">
-                {[
-                  { id: 'BALANCED_OPEN', label: 'BALANCED_OPEN (Crossfeed equalizes left/right wing weight)' },
-                  { id: 'ISOLATED_CLOSED', label: 'ISOLATED_CLOSED (Tanks operate separately, risk roll imbalance)' },
+                  { id: 'CROSSFEED_BALANCED_OPEN', label: 'CROSSFEED_BALANCED_OPEN (Equalize wing pressure)' },
+                  { id: 'ISOLATED', label: 'ISOLATED_CLOSED (Risk lateral wing weight imbalance)' }
                 ].map((opt) => (
                   <button
                     key={opt.id}
@@ -452,10 +372,10 @@ export const CrashPseudocodeChallenges: React.FC<{
                       setC2Crossfeed(opt.id);
                       soundFx.playClick();
                     }}
-                    className={`px-3 py-2 rounded-lg text-xs md:text-sm font-bold border-2 transition-all ${
+                    className={`w-full p-2.5 rounded-lg border text-xs font-bold text-left transition-all ${
                       c2Crossfeed === opt.id
-                        ? 'bg-cyan-500 text-black border-white shadow-[0_0_15px_#06b6d4]'
-                        : 'bg-black/60 text-gray-300 border-gray-700 hover:border-gray-500'
+                        ? 'border-emerald-400 bg-emerald-950/80 text-emerald-300'
+                        : 'border-slate-700 bg-slate-900/60 text-gray-300 hover:border-slate-500'
                     }`}
                   >
                     {opt.label}
@@ -464,57 +384,107 @@ export const CrashPseudocodeChallenges: React.FC<{
               </div>
             </div>
 
+            {/* Loop Condition */}
+            <div className="bg-black/60 p-3.5 rounded-xl border border-cyan-500/40 space-y-2">
+              <span className="text-[11px] font-bold text-cyan-300 tracking-wider block">
+                2. VALVE ACTUATION CONTROL LOOP:
+              </span>
+              <div className="space-y-1.5">
+                {[
+                  { id: 'WHILE (current_weight > 65000_KG)', label: 'WHILE (current_weight > 65,000_KG) { open_valves(); }' },
+                  { id: 'UNTIL (tank_empty)', label: 'UNTIL (fuel_tanks == EMPTY) { dump_all(); }' },
+                  { id: 'WHILE (current_weight < 65000_KG)', label: 'WHILE (current_weight < 65,000_KG) { hold(); }' }
+                ].map((opt) => (
+                  <button
+                    key={opt.id}
+                    onClick={() => {
+                      setC2LoopCondition(opt.id);
+                      soundFx.playClick();
+                    }}
+                    className={`w-full p-2.5 rounded-lg border text-xs font-bold text-left transition-all ${
+                      c2LoopCondition === opt.id
+                        ? 'border-emerald-400 bg-emerald-950/80 text-emerald-300'
+                        : 'border-slate-700 bg-slate-900/60 text-gray-300 hover:border-slate-500'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
-          {/* Feedback & Action */}
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-2">
-            <div className={`text-xs md:text-sm p-4 rounded-xl border-2 flex-1 w-full font-bold ${
-              c2Success ? 'bg-emerald-950/90 border-emerald-400 text-emerald-200' : 'bg-amber-950/90 border-amber-400 text-amber-200'
+          {/* Math calculation input */}
+          <div className="bg-black/70 p-4 rounded-xl border border-yellow-500/60 space-y-2">
+            <span className="text-xs font-bold text-yellow-300 tracking-wider block">
+              3. CALCULATE REQUIRED DUMP DURATION (SECONDS):
+            </span>
+            <p className="text-[11px] text-gray-300">
+              Calculate: <code>(Current Gross Weight - MLW) / Combined Flow Rate</code>:
+            </p>
+            <div className="flex items-center gap-3">
+              <input
+                type="text"
+                value={c2TypedSeconds}
+                onChange={(e) => setC2TypedSeconds(e.target.value)}
+                placeholder="Enter computed seconds"
+                className="w-48 bg-black border-2 border-yellow-400 rounded-lg px-4 py-2 text-yellow-200 text-sm md:text-base font-bold outline-none text-center"
+              />
+              <span className="text-xs text-gray-400">
+                integer seconds (Formula: (84,200 - 65,000) / 320)
+              </span>
+            </div>
+          </div>
+
+          {/* Feedback & Verify */}
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-2">
+            <div className={`text-xs p-3.5 rounded-xl border flex-1 w-full font-bold ${
+              c2Success ? 'bg-emerald-950/90 border-emerald-400 text-emerald-200' : 'bg-cyan-950/80 border-cyan-500/60 text-cyan-200'
             }`}>
               {c2Feedback}
             </div>
 
             <button
               onClick={verifyChallenge2}
-              disabled={isDumping || c2Success}
-              className={`w-full sm:w-auto px-8 py-4 font-bold text-sm tracking-widest rounded-xl shadow-xl flex items-center justify-center gap-2 transition-all ${
-                isDumping
-                  ? 'bg-cyan-500 text-black animate-pulse'
-                  : c2Success
-                  ? 'bg-emerald-500 text-black cursor-default'
-                  : 'bg-amber-500 hover:bg-amber-400 text-black'
-              }`}
+              disabled={isDumping}
+              className="w-full sm:w-auto px-7 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-black font-bold text-xs tracking-widest rounded-xl shadow-[0_0_20px_rgba(250,204,21,0.6)] flex items-center justify-center gap-2 transition-all hover:scale-105 shrink-0"
             >
-              <Play size={16} />
-              <span>{isDumping ? 'DUMPING FUEL...' : c2Success ? 'WEIGHT VERIFIED' : 'EXECUTE JETTISON'}</span>
+              <Play size={15} />
+              <span>{isDumping ? 'MONITORING JETTISON FLOW...' : 'ENGAGE JETTISON VALVES'}</span>
             </button>
           </div>
         </motion.div>
       )}
 
       {/* ======================================================== */}
-      {/* MODULE 3: BLACK BOX CHECKSUM & DISTRESS TOKEN            */}
+      {/* MODULE 3: BEACONS, TRANSPONDER & RECOVERY TOKEN           */}
       {/* ======================================================== */}
       {activeTab === 3 && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
-          <div className="bg-cyan-950/70 border-2 border-cyan-500/60 p-4 rounded-xl flex items-start gap-3">
-            <Lock className="w-6 h-6 text-cyan-400 shrink-0 mt-0.5" />
-            <div className="text-xs md:text-sm text-cyan-100 font-semibold leading-relaxed">
-              <span className="font-bold text-cyan-300">SCENARIO:</span> Arm the Cockpit Voice Recorder (CVR) and Flight Data Recorder (FDR). Identify the official ICAO emergency transponder squawk, international VHF emergency frequency, and synthesize the 3-part encrypted authorization token!
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+          <div className="bg-cyan-950/70 border border-cyan-500/60 p-3.5 rounded-xl flex items-start gap-3">
+            <Radio className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5 animate-pulse" />
+            <div className="text-xs space-y-1">
+              <span className="font-bold text-cyan-300 tracking-wider">
+                CHALLENGE 03: DISTRESS TRANSPONDER & CRASH BEACON ENCRYPTION TOKEN
+              </span>
+              <p className="text-gray-200 leading-relaxed">
+                Establish primary search & rescue broadcast. Select the international aviation emergency Mode-3/A squawk, VHF Guard channel, underwater acoustic beacon frequency, and synthesize the 3-part authorization token.
+              </p>
             </div>
           </div>
 
-          <div className="bg-[#111c33] border-2 border-cyan-400/50 rounded-xl p-5 md:p-6 font-mono text-sm shadow-2xl space-y-4">
-            
-            {/* Squawk Code Selector */}
-            <div>
-              <div className="text-yellow-300 font-bold mb-1.5">1. TRANSPONDER EMERGENCY SQUAWK CODE:</div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {/* Squawk */}
+            <div className="bg-black/60 p-3.5 rounded-xl border border-cyan-500/40 space-y-2">
+              <span className="text-[11px] font-bold text-cyan-300 tracking-wider block">
+                1. SSR SQUAWK CODE:
+              </span>
+              <div className="space-y-1">
                 {[
-                  { code: '7700', meaning: '7700 (General Emergency / Mayday)' },
-                  { code: '7500', meaning: '7500 (Unlawful Interference / Hijack)' },
-                  { code: '7600', meaning: '7600 (Radio Communications Failure)' },
-                  { code: '1200', meaning: '1200 (Standard VFR Flight)' },
+                  { code: '7700', label: '7700 (General Emergency / Mayday)' },
+                  { code: '7600', label: '7600 (Radio Comms Failure)' },
+                  { code: '7500', label: '7500 (Unlawful Interference / Hijack)' },
+                  { code: '1200', label: '1200 (Standard VFR Code)' }
                 ].map((item) => (
                   <button
                     key={item.code}
@@ -522,104 +492,99 @@ export const CrashPseudocodeChallenges: React.FC<{
                       setC3Squawk(item.code);
                       soundFx.playClick();
                     }}
-                    className={`p-2.5 rounded-lg text-xs font-bold border-2 transition-all ${
+                    className={`w-full p-2 rounded-lg border text-xs font-bold text-left transition-all ${
                       c3Squawk === item.code
-                        ? 'bg-cyan-500 text-black border-white shadow-[0_0_15px_#06b6d4]'
-                        : 'bg-black/60 text-gray-300 border-gray-700 hover:border-gray-500'
+                        ? 'border-emerald-400 bg-emerald-950/80 text-emerald-300'
+                        : 'border-slate-700 bg-slate-900/60 text-gray-300 hover:border-slate-500'
                     }`}
                   >
-                    {item.meaning}
+                    {item.label}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* VHF Frequency Selector */}
-            <div>
-              <div className="text-yellow-300 font-bold mb-1.5">2. INTERNATIONAL AERONAUTICAL GUARD FREQUENCY:</div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                {['121.5', '118.0', '124.8', '136.9'].map((freq) => (
-                  <button
-                    key={freq}
-                    onClick={() => {
-                      setC3Freq(freq);
-                      soundFx.playClick();
-                    }}
-                    className={`p-2.5 rounded-lg text-xs font-bold border-2 transition-all ${
-                      c3Freq === freq
-                        ? 'bg-emerald-500 text-black border-white shadow-[0_0_15px_#10b981]'
-                        : 'bg-black/60 text-gray-300 border-gray-700 hover:border-gray-500'
-                    }`}
-                  >
-                    {freq} MHz
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* CSMU Protection */}
-            <div>
-              <div className="text-yellow-300 font-bold mb-1.5">3. CRASH-SURVIVABLE MEMORY UNIT (CSMU) SHIELD:</div>
-              <div className="flex flex-wrap gap-2.5">
+            {/* VHF Guard Frequency */}
+            <div className="bg-black/60 p-3.5 rounded-xl border border-cyan-500/40 space-y-2">
+              <span className="text-[11px] font-bold text-cyan-300 tracking-wider block">
+                2. VHF GUARD FREQUENCY:
+              </span>
+              <div className="space-y-1">
                 {[
-                  { id: 'ARMORED_TITANIUM_LOCK', label: 'ARMORED_TITANIUM_LOCK (3,400 G shock & 1,100°C fire resistance)' },
-                  { id: 'STANDBY', label: 'STANDBY (Unshielded standard memory bus)' },
-                  { id: 'EJECT_FLOATABLE', label: 'EJECT_FLOATABLE (Immediate beacon jettison)' },
-                ].map((opt) => (
+                  { freq: '121.50', label: '121.50 MHz (International Distress Guard)' },
+                  { freq: '118.00', label: '118.00 MHz (Local Tower Frequency)' },
+                  { freq: '136.97', label: '136.97 MHz (ACARS Data Datalink)' }
+                ].map((item) => (
                   <button
-                    key={opt.id}
+                    key={item.freq}
                     onClick={() => {
-                      setC3CsmuMode(opt.id);
+                      setC3Freq(item.freq);
                       soundFx.playClick();
                     }}
-                    className={`px-3 py-2 rounded-lg text-xs md:text-sm font-bold border-2 transition-all ${
-                      c3CsmuMode === opt.id
-                        ? 'bg-amber-400 text-black border-white shadow-[0_0_15px_#f59e0b]'
-                        : 'bg-black/60 text-gray-300 border-gray-700 hover:border-gray-500'
+                    className={`w-full p-2 rounded-lg border text-xs font-bold text-left transition-all ${
+                      c3Freq === item.freq
+                        ? 'border-emerald-400 bg-emerald-950/80 text-emerald-300'
+                        : 'border-slate-700 bg-slate-900/60 text-gray-300 hover:border-slate-500'
                     }`}
                   >
-                    {opt.label}
+                    {item.label}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Token Typing Field */}
-            <div className="bg-black/70 p-4 rounded-xl border-2 border-cyan-400/60 mt-3">
-              <div className="text-white font-bold text-xs md:text-sm mb-1">
-                SYNTHESIZE 3-PART ENCRYPTED TELEMETRY TOKEN:
-              </div>
-              <div className="text-xs text-gray-300 mb-2">
-                Format: <code className="text-yellow-300">[SQUAWK]-[FREQUENCY_INT]-[STATUS]</code> {'->'} For Squawk 7700 on 121.5 MHz, construct: <span className="text-emerald-400 font-bold">7700-121-MAYDAY</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-emerald-400 font-bold text-lg">&gt;</span>
-                <input
-                  type="text"
-                  value={c3TypedToken}
-                  onChange={(e) => setC3TypedToken(e.target.value)}
-                  placeholder="Enter token: e.g. 7700-121-MAYDAY"
-                  className="flex-1 bg-black border-2 border-cyan-400 rounded-lg px-4 py-2 text-cyan-200 text-sm md:text-base font-bold outline-none tracking-widest uppercase"
-                />
-              </div>
+            {/* ULB Pinger Frequency */}
+            <div className="bg-black/60 p-3.5 rounded-xl border border-cyan-500/40 space-y-2">
+              <span className="text-[11px] font-bold text-cyan-300 tracking-wider block">
+                3. ULB ACOUSTIC PINGER (kHz):
+              </span>
+              <p className="text-[11px] text-gray-400">
+                Acoustic pulse frequency emitted by underwater locator beacons:
+              </p>
+              <input
+                type="text"
+                value={c3UlxFreq}
+                onChange={(e) => setC3UlxFreq(e.target.value)}
+                placeholder="e.g. 37.5"
+                className="w-full bg-black border border-cyan-400 rounded-lg px-3 py-2 text-cyan-200 text-sm font-bold outline-none text-center"
+              />
+              <span className="text-[10px] text-gray-400 block text-center">Standard: 37.5 kHz</span>
             </div>
-
           </div>
 
-          {/* Feedback & Action */}
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-2">
-            <div className={`text-xs md:text-sm p-4 rounded-xl border-2 flex-1 w-full font-bold ${
-              c3Success ? 'bg-emerald-950/90 border-emerald-400 text-emerald-200' : 'bg-cyan-950/90 border-cyan-400 text-cyan-200'
+          {/* Synthesis token */}
+          <div className="bg-black/70 p-4 rounded-xl border border-cyan-500/60 space-y-2">
+            <span className="text-xs font-bold text-cyan-300 tracking-wider block">
+              4. CONSTRUCT 3-PART DISTRESS AUTHORIZATION TOKEN:
+            </span>
+            <div className="text-[11px] text-gray-300">
+              Pattern: <code>[SQUAWK]-[GUARD_FREQ]-[DISTRESS_STATUS]</code> (e.g. for Squawk 7700 on 121.5 MHz):
+            </div>
+            <div className="flex items-center gap-3">
+              <input
+                type="text"
+                value={c3Token}
+                onChange={(e) => setC3Token(e.target.value)}
+                placeholder="e.g. 7700-121.5-MAYDAY"
+                className="flex-1 bg-black border-2 border-cyan-400 rounded-lg px-4 py-2 text-cyan-200 text-sm md:text-base font-bold outline-none uppercase tracking-widest placeholder:text-gray-600"
+              />
+            </div>
+          </div>
+
+          {/* Feedback & Verify */}
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-2">
+            <div className={`text-xs p-3.5 rounded-xl border flex-1 w-full font-bold ${
+              c3Success ? 'bg-emerald-950/90 border-emerald-400 text-emerald-200' : 'bg-cyan-950/80 border-cyan-500/60 text-cyan-200'
             }`}>
               {c3Feedback}
             </div>
 
             <button
               onClick={verifyChallenge3}
-              className="w-full sm:w-auto px-8 py-4 bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-sm tracking-widest rounded-xl shadow-[0_0_25px_rgba(6,182,212,0.7)] flex items-center justify-center gap-2 transition-all hover:scale-105"
+              className="w-full sm:w-auto px-7 py-3.5 bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs tracking-widest rounded-xl shadow-[0_0_20px_rgba(6,182,212,0.7)] flex items-center justify-center gap-2 transition-all hover:scale-105 shrink-0"
             >
-              <Play size={16} />
-              <span>TRANSMIT & ARM FDR</span>
+              <Play size={15} />
+              <span>TRANSMIT & ARM FDR BEACON</span>
             </button>
           </div>
         </motion.div>
@@ -630,16 +595,16 @@ export const CrashPseudocodeChallenges: React.FC<{
         <motion.div
           initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="mt-8 border-2 border-emerald-400 bg-emerald-950/90 p-5 rounded-2xl flex flex-col sm:flex-row justify-between items-center gap-5 shadow-[0_0_40px_rgba(16,185,129,0.7)]"
+          className="mt-6 border-2 border-emerald-400 bg-emerald-950/90 p-4 md:p-5 rounded-2xl flex flex-col sm:flex-row justify-between items-center gap-4 shadow-[0_0_40px_rgba(16,185,129,0.7)]"
         >
-          <div className="flex items-center gap-4">
-            <ShieldCheck className="w-10 h-10 text-emerald-400 shrink-0" />
+          <div className="flex items-center gap-3">
+            <ShieldCheck className="w-9 h-9 text-emerald-400 shrink-0" />
             <div>
-              <div className="text-base md:text-lg font-bold text-emerald-300 tracking-wider">
-                ALL CRASH DIAGNOSTICS CLEARED! PRIZE UNLOCKED:
+              <div className="text-sm md:text-base font-bold text-emerald-300 tracking-wider">
+                ALL 3 FLIGHT DIAGNOSTIC MODULES RESOLVED!
               </div>
-              <div className="text-xs md:text-sm text-emerald-100">
-                OFFICIAL FLIGHT OPERATIONS USER MANUAL DOCUMENT IS READY FOR ACCESS
+              <div className="text-xs text-emerald-100">
+                OFFICIAL 30-PAGE CIRCUIT USER MANUAL & AI TROUBLESHOOTING COPILOT ARE UNLOCKED.
               </div>
             </div>
           </div>
@@ -649,10 +614,10 @@ export const CrashPseudocodeChallenges: React.FC<{
               soundFx.playSuccess();
               onAllCompleted();
             }}
-            className="w-full sm:w-auto px-8 py-4 bg-emerald-400 hover:bg-emerald-300 text-black font-bold text-sm tracking-[0.2em] rounded-xl shadow-xl flex items-center justify-center gap-2 transition-all hover:scale-105"
+            className="w-full sm:w-auto px-6 py-3.5 bg-emerald-400 hover:bg-emerald-300 text-black font-bold text-xs tracking-[0.2em] rounded-xl shadow-xl flex items-center justify-center gap-2 transition-all hover:scale-105 shrink-0"
           >
-            <span>OPEN USER MANUAL</span>
-            <ArrowRight size={18} />
+            <span>ACCESS USER MANUAL</span>
+            <ArrowRight size={16} />
           </button>
         </motion.div>
       )}

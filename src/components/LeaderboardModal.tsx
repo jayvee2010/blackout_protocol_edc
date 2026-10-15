@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { fetchLeaderboard, isSupabaseConnected } from '../lib/database';
+import { fetchLeaderboard, isSupabaseConnected, isGoogleSheetsConnected } from '../lib/database';
 import type { LeaderboardEntry } from '../lib/database';
 import { soundFx } from '../lib/audio';
 import { 
@@ -57,8 +57,15 @@ export const LeaderboardModal: React.FC<{
                 <span>RANKED BY LEAST TIME TAKEN TO COMPLETE RECOVERY</span>
                 <span className="flex items-center gap-1 text-[11px] px-2 py-0.5 rounded border border-cyan-400/50 bg-cyan-950/60 text-cyan-300">
                   <Database size={11} />
-                  {isSupabaseConnected ? 'POSTGRESQL CLOUD' : 'LOCAL PERSISTENT STORE'}
+                  {isGoogleSheetsConnected ? 'GOOGLE SHEETS CLOUD' : isSupabaseConnected ? 'POSTGRESQL CLOUD' : 'LOCAL PERSISTENT STORE'}
                 </span>
+                <button 
+                  onClick={loadData}
+                  className="p-1 hover:text-yellow-300 text-gray-400 rounded transition-colors"
+                  title="Refresh Leaderboard"
+                >
+                  <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
+                </button>
               </div>
             </div>
           </div>

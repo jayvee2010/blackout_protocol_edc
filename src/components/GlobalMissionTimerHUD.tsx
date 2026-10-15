@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useStore } from '../store/useStore';
-import { Clock, CheckCircle2, Shield } from 'lucide-react';
+import { soundFx } from '../lib/audio';
+import { Clock, CheckCircle2, Shield, RotateCcw } from 'lucide-react';
 
 export const GlobalMissionTimerHUD: React.FC = () => {
   const { 
@@ -10,8 +11,11 @@ export const GlobalMissionTimerHUD: React.FC = () => {
     decrementRemainingTime, 
     isTimerRunning, 
     isGameFinished,
-    stampedTimeTakenSeconds 
+    stampedTimeTakenSeconds,
+    resetMissionToStart
   } = useStore();
+
+  const [confirmReset, setConfirmReset] = useState<boolean>(false);
 
   // Active countdown timer effect
   useEffect(() => {
@@ -58,9 +62,21 @@ export const GlobalMissionTimerHUD: React.FC = () => {
     ? 'COCKPIT PSEUDOCODE RECOVERY'
     : 'USER MANUAL & AUDIO DECRYPTION';
 
+  const handleRestartMission = () => {
+    if (!confirmReset) {
+      setConfirmReset(true);
+      soundFx.playClick(900);
+      setTimeout(() => setConfirmReset(false), 4000);
+    } else {
+      soundFx.playClick(1000);
+      resetMissionToStart();
+      setConfirmReset(false);
+    }
+  };
+
   return (
     <div className="fixed top-2 left-1/2 -translate-x-1/2 z-50 pointer-events-auto font-mono select-none">
-      <div className={`flex items-center gap-3 sm:gap-6 px-4 py-2 rounded-2xl border-2 backdrop-blur-xl shadow-2xl transition-all ${
+      <div className={`flex items-center gap-2.5 sm:gap-5 px-3.5 sm:px-5 py-2 rounded-2xl border-2 backdrop-blur-xl shadow-2xl transition-all ${
         isGameFinished
           ? 'bg-emerald-950/90 border-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.7)] text-emerald-300'
           : isUrgent
@@ -68,7 +84,7 @@ export const GlobalMissionTimerHUD: React.FC = () => {
           : 'bg-[#0f172a]/95 border-cyan-400/80 shadow-[0_0_25px_rgba(6,182,212,0.4)] text-white'
       }`}>
         {/* Team Identification */}
-        <div className="flex items-center gap-2 border-r border-gray-700 pr-3 sm:pr-4">
+        <div className="flex items-center gap-2 border-r border-gray-700 pr-2.5 sm:pr-4">
           <Shield size={16} className={isGameFinished ? 'text-emerald-400' : 'text-cyan-400'} />
           <div>
             <div className="text-[9px] text-gray-400 tracking-wider">TEAM</div>
@@ -102,6 +118,27 @@ export const GlobalMissionTimerHUD: React.FC = () => {
             {isGameFinished && <CheckCircle2 size={13} className="text-emerald-400" />}
             <span>{stageLabel}</span>
           </span>
+        </div>
+
+        {/* RESTART MISSION BUTTON */}
+        <div className="border-l border-gray-700 pl-2.5 sm:pl-3">
+          <button
+            onClick={handleRestartMission}
+            title="Reset mission back to login page"
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] font-bold transition-all shadow ${
+              confirmReset
+                ? 'bg-red-600 hover:bg-red-500 border-red-300 text-white animate-pulse'
+                : 'bg-black/60 hover:bg-red-950/80 border-red-500/50 text-red-300 hover:border-red-400'
+            }`}
+          >
+            <RotateCcw size={12} className={confirmReset ? 'animate-spin' : ''} />
+            <span className="hidden sm:inline">
+              {confirmReset ? 'CLICK TO CONFIRM' : 'START FROM STARTING'}
+            </span>
+            <span className="sm:hidden">
+              {confirmReset ? 'CONFIRM' : 'RESTART'}
+            </span>
+          </button>
         </div>
       </div>
     </div>
