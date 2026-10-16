@@ -1,547 +1,456 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BLACKOUT PROTOCOL // LIVE CLASSIFIED LEADERBOARD</title>
-  
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- React & React DOM CDNs -->
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  
-  <!-- Babel Standalone to compile JSX in browser -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800;900&family=JetBrains+Mono:wght@400;600;700;800&family=Inter:wght@400;600;700;800;900&display=swap');
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EDC Presents: BLACKOUT Leaderboard</title>
     
-    :root {
-      --glow-gold: 0 0 25px rgba(250, 204, 21, 0.45);
-      --glow-cyan: 0 0 25px rgba(6, 182, 212, 0.45);
-      --glow-purple: 0 0 25px rgba(168, 85, 247, 0.45);
-      --glow-red: 0 0 25px rgba(239, 68, 68, 0.45);
-    }
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Rajdhani', 'sans-serif'],
+                        serif: ['Cinzel', 'serif'],
+                    },
+                    colors: {
+                        obsidian: {
+                            900: '#06080D',
+                            800: '#0D111A',
+                            700: '#161B26',
+                            600: '#222A3A',
+                        },
+                        metal: {
+                            gold: '#FFD700',
+                            goldDark: '#B39700',
+                            silver: '#E2E8F0',
+                            silverDark: '#94A3B8',
+                            bronze: '#E58A3E',
+                            bronzeDark: '#A65D24',
+                        },
+                        neon: {
+                            red: '#FF2A2A',
+                            blue: '#00E5FF'
+                        }
+                    },
+                    boxShadow: {
+                        'panel': '0 10px 30px -5px rgba(0, 0, 0, 0.9), inset 0 1px 1px rgba(255, 255, 255, 0.1)',
+                        'glow-gold': '0 0 30px rgba(255, 215, 0, 0.3), inset 0 0 20px rgba(255, 215, 0, 0.1)',
+                        'glow-silver': '0 0 30px rgba(226, 232, 240, 0.2), inset 0 0 20px rgba(226, 232, 240, 0.1)',
+                        'glow-bronze': '0 0 30px rgba(229, 138, 62, 0.2), inset 0 0 20px rgba(229, 138, 62, 0.1)',
+                        'glow-live': '0 0 20px rgba(255, 42, 42, 0.4)',
+                        'tactile': '0 6px 0 rgba(0,0,0,0.8)',
+                    },
+                    backgroundImage: {
+                        'metal-gradient': 'linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%)',
+                    }
+                }
+            }
+        }
+    </script>
 
-    body {
-      font-family: 'JetBrains Mono', monospace;
-      background-color: #030712;
-      color: #F3F4F6;
-      overflow-x: hidden;
-    }
+    <style>
+        body {
+            background-color: #06080D;
+            background-image: 
+                radial-gradient(circle at 50% 10%, #161B26 0%, transparent 60%),
+                linear-gradient(to bottom, #06080D 0%, #030406 100%);
+            color: #e2e8f0;
+        }
 
-    .font-orbitron {
-      font-family: 'Orbitron', sans-serif;
-    }
+        /* Ambient animated background elements */
+        .ambient-light {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.15;
+            z-index: 0;
+            pointer-events: none;
+        }
 
-    /* Radar scanline animation */
-    .scanline {
-      background: linear-gradient(
-        to bottom,
-        rgba(255,255,255,0),
-        rgba(255,255,255,0) 50%,
-        rgba(6, 182, 212, 0.12) 50%,
-        rgba(6, 182, 212, 0.04)
-      );
-      background-size: 100% 4px;
-      pointer-events: none;
-    }
+        .text-gradient-metal {
+            background: linear-gradient(180deg, #FFFFFF 0%, #94A3B8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
-    .cyber-grid {
-      background-image: 
-        linear-gradient(to right, rgba(56, 189, 248, 0.05) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
-      background-size: 36px 36px;
-    }
+        .text-gradient-gold {
+            background: linear-gradient(180deg, #FFF5B3 0%, #FFD700 50%, #B39700 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
-    /* CRT Vignette */
-    .vignette {
-      box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.85);
-    }
-  </style>
+        /* Premium Game Client Panel Base */
+        .premium-panel {
+            background: linear-gradient(145deg, #161B26 0%, #0D111A 100%);
+            border: 1px solid #222A3A;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8), inset 0 2px 2px rgba(255,255,255,0.05);
+            position: relative;
+        }
+
+        /* Panel inner glow overlays */
+        .premium-panel::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 100%);
+            border-radius: inherit;
+            pointer-events: none;
+        }
+
+        /* Podium Rank Cards styling */
+        .rank-card {
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            border-top-width: 4px;
+        }
+        .rank-card:hover {
+            transform: translateY(-10px);
+            filter: brightness(1.1);
+        }
+
+        /* Live pulse animation */
+        @keyframes scanline {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+        .live-bg-effect {
+            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255, 42, 42, 0.05) 3px, transparent 4px);
+            background-size: 100% 4px;
+        }
+        
+        @keyframes alert-pulse {
+            0% { box-shadow: inset 0 0 0 2px rgba(255, 42, 42, 0.2), 0 0 20px rgba(255, 42, 42, 0.1); }
+            50% { box-shadow: inset 0 0 0 2px rgba(255, 42, 42, 0.8), 0 0 40px rgba(255, 42, 42, 0.4); }
+            100% { box-shadow: inset 0 0 0 2px rgba(255, 42, 42, 0.2), 0 0 20px rgba(255, 42, 42, 0.1); }
+        }
+        .live-panel-border {
+            animation: alert-pulse 2s infinite;
+            border: 1px solid rgba(255, 42, 42, 0.3);
+        }
+
+        /* Custom scrollbar for desktop client */
+        .scroll-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        .scroll-container::-webkit-scrollbar-track {
+            background: #06080D;
+            border-radius: 4px;
+        }
+        .scroll-container::-webkit-scrollbar-thumb {
+            background: #222A3A;
+            border-radius: 4px;
+        }
+        .scroll-container::-webkit-scrollbar-thumb:hover {
+            background: #00E5FF;
+        }
+
+        /* Pedestal Effect for Podium */
+        .pedestal {
+            background: radial-gradient(ellipse at top, rgba(255,255,255,0.1) 0%, transparent 70%);
+            height: 40px;
+            width: 100%;
+            bottom: -20px;
+            position: absolute;
+            border-radius: 50%;
+            z-index: -1;
+        }
+
+        /* Angled Cut Corners */
+        .cut-corner {
+            clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+        }
+    </style>
 </head>
-<body class="bg-[#030712] text-slate-100 antialiased selection:bg-cyan-500 selection:text-black min-h-screen relative cyber-grid">
-  <div class="fixed inset-0 scanline z-40 pointer-events-none opacity-40"></div>
-  <div class="fixed inset-0 vignette z-30 pointer-events-none"></div>
+<body class="flex flex-col font-sans p-4 md:p-6 2xl:p-10 relative min-h-screen lg:h-screen lg:overflow-hidden">
 
-  <div id="root" class="relative z-20"></div>
+    <div class="ambient-light bg-neon-blue w-[400px] md:w-[800px] h-[400px] md:h-[800px] top-[-200px] md:top-[-400px] left-[-100px] md:left-[-200px]"></div>
+    <div class="ambient-light bg-metal-gold w-[300px] md:w-[600px] h-[300px] md:h-[600px] bottom-[-150px] md:bottom-[-300px] right-[-50px] md:right-[-100px] opacity-10"></div>
 
-  <script type="text/babel">
-    const { useState, useEffect } = React;
-
-    const SERVER = (location.protocol.startsWith('http') && (location.port === '3000' || !location.port))
-      ? (location.origin === 'null' ? 'http://localhost:3000' : location.origin)
-      : 'http://localhost:3000';
-
-    const formatTime = (s) => {
-      const sec = Math.max(0, Math.floor(Number(s) || 0));
-      const m = Math.floor(sec / 60).toString().padStart(2, '0');
-      const rem = (sec % 60).toString().padStart(2, '0');
-      return `${m}:${rem}`;
-    };
-
-    function computeTeamResults(g, session, settings = {}) {
-      const ss = session || {};
-      const earned = (Number(ss.score1) || 0) + (Number(ss.score2) || 0) + (Number(ss.score3) || 0);
-      const cost = ss.reward_cost_snapshot !== undefined ? Number(ss.reward_cost_snapshot)
-        : (ss.reward_type === 'Extra Time' ? Number(settings.extratime_cost || 100) : ss.reward_type === 'Hint' ? Number(settings.hint_cost || 50) : 0);
-      
-      const deductions = Array.isArray(ss.deductions) ? ss.deductions : [];
-      const totalDeductions = deductions.reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
-      const netPoints = Math.max(0, earned - cost - totalDeductions);
-      
-      const era1Time = Number(ss.era1_duration) || 0;
-      const era2Time = Number(ss.era2_duration) || 0;
-      const era3Time = Number(ss.era3_duration) || 0;
-      const actualDuration = Number(ss.actual_duration) || (era1Time + era2Time + era3Time);
-      
-      const bonus = ss.reward_type === 'Extra Time' ? Number(settings.extratime_bonus || 60) : 0;
-      const adjustedDuration = Math.max(0, actualDuration - bonus);
-
-      return {
-        earned,
-        cost,
-        deductions,
-        totalDeductions,
-        netPoints,
-        era1Time,
-        era2Time,
-        era3Time,
-        actualDuration,
-        bonus,
-        adjustedDuration,
-        rewardType: ss.reward_type || 'None'
-      };
-    }
-
-    function LeaderboardApp() {
-      const [state, setState] = useState({ groups: [], sessions: {}, settings: {} });
-      const [loading, setLoading] = useState(true);
-      const [lastSync, setLastSync] = useState(Date.now());
-      const [search, setSearch] = useState('');
-
-      const fetchState = () => {
-        fetch(SERVER + '/api/state')
-          .then(res => res.json())
-          .then(data => {
-            setState({
-              groups: data.groups || [],
-              sessions: data.sessions || {},
-              settings: data.settings || {}
-            });
-            setLastSync(Date.now());
-            setLoading(false);
-          })
-          .catch(() => {
-            // Fallback to local storage if running standalone
-            try {
-              const localGroups = localStorage.getItem('edc_event_groups');
-              const localSess = localStorage.getItem('edc_event_sessions');
-              const localSets = localStorage.getItem('edc_event_settings');
-              setState({
-                groups: localGroups ? JSON.parse(localGroups) : [],
-                sessions: localSess ? JSON.parse(localSess) : {},
-                settings: localSets ? JSON.parse(localSets) : {}
-              });
-            } catch(e) {}
-            setLoading(false);
-          });
-      };
-
-      useEffect(() => {
-        fetchState();
-        const iv = setInterval(fetchState, 2000); // 2 second live telemetry poll
-        return () => clearInterval(iv);
-      }, []);
-
-      const groups = state.groups || [];
-      const sessions = state.sessions || {};
-      const settings = state.settings || {};
-
-      // Process completed and active groups
-      const completedList = groups.filter(g => sessions[g.id]?.status === 'Completed').map(g => {
-        const res = computeTeamResults(g, sessions[g.id], settings);
-        return { ...g, session: sessions[g.id], res };
-      });
-
-      completedList.sort((a, b) => {
-        if (a.res.adjustedDuration !== b.res.adjustedDuration) {
-          return a.res.adjustedDuration - b.res.adjustedDuration;
-        }
-        return b.res.netPoints - a.res.netPoints;
-      });
-
-      let currentRank = 1;
-      const ranked = completedList.map((g, idx, arr) => {
-        if (idx > 0 && (g.res.adjustedDuration !== arr[idx - 1].res.adjustedDuration || g.res.netPoints !== arr[idx - 1].res.netPoints)) {
-          currentRank = idx + 1;
-        }
-        return { ...g, officialRank: currentRank };
-      });
-
-      const activeList = groups.filter(g => sessions[g.id]?.status === 'In Progress');
-
-      const filtered = ranked.filter(g => 
-        g.group_name.toLowerCase().includes(search.toLowerCase()) || 
-        g.game_id.toString().includes(search)
-      );
-
-      return (
-        <div className="max-w-[1600px] mx-auto p-4 md:p-8 space-y-8 pb-20">
-          
-          {/* ======================================================== */}
-          {/* BLACKOUT PROTOCOL CLASSIFIED HERO HEADER WITH EDC LOGO   */}
-          {/* ======================================================== */}
-          <header className="relative bg-[#070d1e]/90 border-2 border-cyan-500/60 rounded-3xl p-6 md:p-8 shadow-[0_0_60px_rgba(6,182,212,0.25)] backdrop-blur-xl overflow-hidden">
-            {/* Top decorative hazard stripes */}
-            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-cyan-400 to-rose-500"></div>
-
-            <div className="flex flex-col lg:flex-row items-center justify-between gap-6 relative z-10">
-              
-              {/* EDC Logo & Department Identity */}
-              <div className="flex items-center gap-5">
-                <div className="relative group">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 to-amber-500 rounded-full blur-md opacity-75 group-hover:opacity-100 transition duration-500"></div>
-                  <img 
-                    src="/edc-logo.jpg" 
-                    alt="EDC Logo" 
-                    className="relative w-20 h-20 md:w-24 md:h-24 rounded-full border-2 border-cyan-400 bg-black p-1 object-cover shadow-[0_0_20px_rgba(6,182,212,0.8)]"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = 'edc-logo.jpg';
-                    }}
-                  />
-                  <span className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-emerald-400 border-2 border-black animate-pulse" title="System Live"></span>
+    <header class="w-full flex flex-col md:flex-row items-center justify-between mb-8 z-10 shrink-0 gap-4 text-center md:text-left">
+        <div class="flex flex-col md:flex-row items-center gap-4 md:gap-6">
+            <!-- Embellished Logo -->
+            <div class="relative w-20 h-20 md:w-24 md:h-24 flex-shrink-0">
+                <div class="absolute inset-0 rounded-full border-2 border-metal-gold shadow-glow-gold animate-[spin_10s_linear_infinite] opacity-50 border-dashed"></div>
+                <div class="absolute inset-1 rounded-full bg-obsidian-800 border-2 border-metal-goldDark overflow-hidden flex items-center justify-center z-10 shadow-panel">
+                    <img src="logo.jpeg" onerror="this.style.display='none'" alt="EDC Logo" class="w-full h-full object-cover">
                 </div>
-
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-0.5 rounded bg-cyan-950/90 border border-cyan-400 text-cyan-300 font-black text-[10px] tracking-[0.25em] uppercase">
-                      BLACKOUT PROTOCOL // LEVEL-1 ACTIVE
-                    </span>
-                    <span className="px-2 py-0.5 rounded bg-amber-950/80 border border-amber-500 text-amber-300 font-bold text-[10px] tracking-wider uppercase">
-                      ELECTRONIC DESIGN CLUB • SIT PUNE
-                    </span>
-                  </div>
-
-                  <h1 className="text-2xl md:text-5xl font-black font-orbitron tracking-[0.15em] text-white mt-2 drop-shadow-[0_0_25px_rgba(255,255,255,0.7)]">
-                    OPERATION BLACKOUT
-                  </h1>
-                  <p className="text-xs md:text-sm text-cyan-300 mt-1 font-mono tracking-wider flex items-center gap-2">
-                    <span>3 ERAS CHRONO-TELEMETRY &amp; LIVE OPERATIVE STANDINGS</span>
-                    <span className="text-slate-500">|</span>
-                    <span className="text-emerald-400">STATUS: BROADCASTING</span>
-                  </p>
-                </div>
-              </div>
-
-              {/* Status Telemetry Ticker */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 w-full lg:w-auto text-center font-mono">
-                <div className="bg-black/60 border border-cyan-500/40 p-3 rounded-2xl shadow-inner">
-                  <div className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">OPERATIVES</div>
-                  <div className="text-2xl md:text-3xl font-black font-orbitron text-cyan-400 mt-0.5">{groups.length}</div>
-                </div>
-
-                <div className="bg-black/60 border border-emerald-500/40 p-3 rounded-2xl shadow-inner">
-                  <div className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">RECOVERED</div>
-                  <div className="text-2xl md:text-3xl font-black font-orbitron text-emerald-400 mt-0.5">{ranked.length}</div>
-                </div>
-
-                <div className="bg-black/60 border border-purple-500/40 p-3 rounded-2xl shadow-inner col-span-2 sm:col-span-1">
-                  <div className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">IN THE FIELD</div>
-                  <div className="text-2xl md:text-3xl font-black font-orbitron text-purple-400 mt-0.5">{activeList.length}</div>
-                </div>
-              </div>
             </div>
-
-            {/* 3 ERAS PROTOCOL HUD BANNER */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-6 pt-5 border-t border-cyan-500/30 text-xs">
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-amber-950/30 border border-amber-500/40">
-                <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-400 flex items-center justify-center font-orbitron font-black text-amber-400 text-sm">
-                  E1
+            
+            <div class="flex flex-col items-center md:items-start">
+                <div class="flex items-center gap-3">
+                    <span class="text-metal-gold font-display font-bold tracking-[0.3em] uppercase text-xs md:text-sm">EDC Presents</span>
+                    <div class="h-[2px] w-8 md:w-12 bg-metal-gold opacity-50 hidden md:block"></div>
                 </div>
-                <div>
-                  <div className="font-bold text-amber-300 tracking-wider">ERA 1: RETRO / ANCIENT</div>
-                  <div className="text-[11px] text-gray-400">Mechanical Relays &amp; Analog Circuits</div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-cyan-950/30 border border-cyan-500/40">
-                <div className="w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-400 flex items-center justify-center font-orbitron font-black text-cyan-400 text-sm">
-                  E2
-                </div>
-                <div>
-                  <div className="font-bold text-cyan-300 tracking-wider">ERA 2: INDUSTRIAL / MODERN</div>
-                  <div className="text-[11px] text-gray-400">Microcontrollers &amp; Avionics Telemetry</div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-purple-950/30 border border-purple-500/40">
-                <div className="w-8 h-8 rounded-lg bg-purple-500/20 border border-purple-400 flex items-center justify-center font-orbitron font-black text-purple-400 text-sm">
-                  E3
-                </div>
-                <div>
-                  <div className="font-bold text-purple-300 tracking-wider">ERA 3: CYBER / FUTURE</div>
-                  <div className="text-[11px] text-gray-400">Black Box Quantum Lock &amp; AI Decryption</div>
-                </div>
-              </div>
+                <h1 class="text-5xl md:text-6xl xl:text-7xl font-serif font-black text-gradient-metal tracking-wider drop-shadow-2xl leading-none mt-1">
+                    BLACKOUT
+                </h1>
+                <p class="text-metal-silverDark font-display tracking-[0.2em] uppercase text-xs md:text-sm font-semibold mt-2">
+                    Every second counts
+                </p>
             </div>
-          </header>
-
-          {/* ======================================================== */}
-          {/* SEARCH & FILTERS CONTROLS                                */}
-          {/* ======================================================== */}
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-[#0a1124]/90 p-4 rounded-2xl border border-cyan-500/40 shadow-lg">
-            <div className="flex items-center gap-3">
-              <span className="w-3 h-3 rounded-full bg-cyan-400 animate-ping"></span>
-              <span className="text-xs md:text-sm font-bold tracking-widest text-white uppercase font-orbitron">
-                CHRONO-RANKINGS // FASTEST ADJUSTED TIME WINS
-              </span>
-            </div>
-
-            <div className="relative w-full sm:w-80">
-              <input
-                type="text"
-                placeholder="Search team name or ID..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full bg-black/80 border border-cyan-500/50 rounded-xl px-4 py-2.5 text-xs text-cyan-200 placeholder-gray-500 outline-none focus:border-cyan-300 font-mono transition-all"
-              />
-              <span className="absolute right-3 top-2.5 text-xs text-gray-500">🔍</span>
-            </div>
-          </div>
-
-          {/* ======================================================== */}
-          {/* PODIUM SHOWCASE: TOP 3 OPERATIVES                        */}
-          {/* ======================================================== */}
-          {ranked.length >= 3 && !search && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-2">
-              
-              {/* #2 SILVER PODIUM */}
-              <div className="order-2 md:order-1 bg-gradient-to-b from-[#111e38]/95 to-[#0b1326]/95 border-2 border-slate-400/80 rounded-3xl p-6 shadow-[0_0_40px_rgba(148,163,184,0.3)] relative flex flex-col justify-between">
-                <div className="absolute -top-4 left-6 px-3 py-1 rounded-full bg-slate-300 text-black font-black font-orbitron text-xs tracking-widest shadow">
-                  #2 SILVER RANK
-                </div>
-                <div>
-                  <div className="text-xs text-slate-400 mt-2 font-mono">GAME ID: #{ranked[1].game_id}</div>
-                  <h3 className="text-xl font-black font-orbitron text-white mt-1">{ranked[1].group_name}</h3>
-                  <p className="text-xs text-slate-400 truncate mt-1">{(ranked[1].members || []).map(m => m.member_name).join(', ')}</p>
-                </div>
-                <div className="mt-6 pt-4 border-t border-slate-700/60 flex justify-between items-end">
-                  <div>
-                    <div className="text-[10px] text-slate-400 uppercase">Adjusted Time</div>
-                    <div className="text-2xl font-black font-orbitron text-slate-200">{formatTime(ranked[1].res.adjustedDuration)}</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-[10px] text-slate-400 uppercase">Net Points</div>
-                    <div className="text-lg font-bold font-orbitron text-cyan-400">{ranked[1].res.netPoints} PTS</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* #1 GOLD CHAMPION PODIUM */}
-              <div className="order-1 md:order-2 bg-gradient-to-b from-[#251d08]/95 via-[#181305]/95 to-[#0c0a02]/95 border-2 border-yellow-400 rounded-3xl p-7 shadow-[0_0_60px_rgba(250,204,21,0.5)] relative flex flex-col justify-between scale-105 z-10">
-                <div className="absolute -top-5 left-1/2 -translate-x-1/2 px-5 py-1.5 rounded-full bg-gradient-to-r from-yellow-400 to-amber-500 text-black font-black font-orbitron text-xs tracking-[0.25em] shadow-[0_0_20px_rgba(250,204,21,0.8)] animate-pulse">
-                  ★ #1 OVERALL CHAMPION ★
-                </div>
-                <div className="text-center mt-3">
-                  <div className="text-xs text-yellow-400/80 font-mono">GAME ID: #{ranked[0].game_id}</div>
-                  <h3 className="text-2xl md:text-3xl font-black font-orbitron text-yellow-300 mt-1 drop-shadow-[0_0_15px_rgba(250,204,21,0.8)]">
-                    {ranked[0].group_name}
-                  </h3>
-                  <p className="text-xs text-gray-300 truncate mt-1">{(ranked[0].members || []).map(m => m.member_name).join(', ')}</p>
-                </div>
-                <div className="mt-6 pt-4 border-t border-yellow-500/50 flex justify-between items-end bg-black/40 p-4 rounded-2xl border border-yellow-500/30">
-                  <div className="text-left">
-                    <div className="text-[10px] text-yellow-400 uppercase font-bold tracking-wider">Mission Record Time</div>
-                    <div className="text-3xl font-black font-orbitron text-yellow-300">{formatTime(ranked[0].res.adjustedDuration)}</div>
-                    {ranked[0].res.bonus > 0 && <span className="text-[10px] text-amber-400 font-bold block">(-{ranked[0].res.bonus}s bonus applied)</span>}
-                  </div>
-                  <div className="text-right">
-                    <div className="text-[10px] text-yellow-400 uppercase font-bold tracking-wider">Net Score</div>
-                    <div className="text-2xl font-black font-orbitron text-emerald-400">{ranked[0].res.netPoints} PTS</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* #3 BRONZE PODIUM */}
-              <div className="order-3 md:order-3 bg-gradient-to-b from-[#211409]/95 to-[#130b05]/95 border-2 border-amber-600/80 rounded-3xl p-6 shadow-[0_0_40px_rgba(217,119,6,0.3)] relative flex flex-col justify-between">
-                <div className="absolute -top-4 left-6 px-3 py-1 rounded-full bg-amber-600 text-white font-black font-orbitron text-xs tracking-widest shadow">
-                  #3 BRONZE RANK
-                </div>
-                <div>
-                  <div className="text-xs text-amber-500 mt-2 font-mono">GAME ID: #{ranked[2].game_id}</div>
-                  <h3 className="text-xl font-black font-orbitron text-white mt-1">{ranked[2].group_name}</h3>
-                  <p className="text-xs text-slate-400 truncate mt-1">{(ranked[2].members || []).map(m => m.member_name).join(', ')}</p>
-                </div>
-                <div className="mt-6 pt-4 border-t border-amber-800/60 flex justify-between items-end">
-                  <div>
-                    <div className="text-[10px] text-amber-400 uppercase">Adjusted Time</div>
-                    <div className="text-2xl font-black font-orbitron text-amber-300">{formatTime(ranked[2].res.adjustedDuration)}</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-[10px] text-amber-400 uppercase">Net Points</div>
-                    <div className="text-lg font-bold font-orbitron text-cyan-400">{ranked[2].res.netPoints} PTS</div>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          )}
-
-          {/* ======================================================== */}
-          {/* OFFICIAL HIGH-VISIBILITY BLACKOUT TELEMETRY TABLE         */}
-          {/* ======================================================== */}
-          <div className="bg-[#070c1b]/95 border-2 border-cyan-500/50 rounded-3xl shadow-2xl overflow-hidden backdrop-blur-xl">
-            <div className="p-5 border-b border-cyan-500/30 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="p-2 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 font-black">
-                  ⚡
-                </span>
-                <div>
-                  <h3 className="font-orbitron font-black text-lg text-white tracking-widest">
-                    BLACKOUT PROTOCOL CHRONO-TELEMETRY LOG
-                  </h3>
-                  <p className="text-xs text-cyan-300">INDIVIDUAL 3 ERAS LAP READOUTS &amp; POINT DEDUCTION BALANCES</p>
-                </div>
-              </div>
-
-              <div className="text-xs text-gray-400 font-mono hidden md:block">
-                AUTO-SYNC: 2000ms // REAL-TIME
-              </div>
-            </div>
-
-            {loading ? (
-              <div className="py-24 text-center text-cyan-300 font-orbitron font-bold tracking-widest animate-pulse">
-                INITIALIZING BLACKOUT PROTOCOL TELEMETRY...
-              </div>
-            ) : filtered.length === 0 ? (
-              <div className="py-24 text-center text-gray-500 font-mono tracking-wider">
-                NO COMPLETED BLACKOUT MISSIONS LOGGED YET.
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse font-mono">
-                  <thead>
-                    <tr className="bg-black/60 border-b border-cyan-500/30 text-xs font-bold text-cyan-400 uppercase tracking-widest">
-                      <th className="p-4 text-center">RANK</th>
-                      <th className="p-4">GAME ID</th>
-                      <th className="p-4">OPERATIVE UNIT / SQUAD</th>
-                      <th className="p-4 text-center text-amber-300">ERA 1 (LAP 1)</th>
-                      <th className="p-4 text-center text-cyan-300">ERA 2 (LAP 2)</th>
-                      <th className="p-4 text-center text-purple-300">ERA 3 (LAP 3)</th>
-                      <th className="p-4 text-center text-gray-400">RAW TIME</th>
-                      <th className="p-4 text-center text-emerald-300">ADJUSTED TIME</th>
-                      <th className="p-4 text-right text-yellow-300">NET SCORE</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-800 text-sm">
-                    {filtered.map((g) => {
-                      const isGold = g.officialRank === 1;
-                      const isSilver = g.officialRank === 2;
-                      const isBronze = g.officialRank === 3;
-
-                      return (
-                        <tr 
-                          key={g.id} 
-                          className={`hover:bg-cyan-950/20 transition-colors ${
-                            isGold ? 'bg-yellow-950/20' : isSilver ? 'bg-slate-900/30' : isBronze ? 'bg-amber-950/20' : ''
-                          }`}
-                        >
-                          {/* Rank Badge */}
-                          <td className="p-4 text-center">
-                            <span className={`inline-flex items-center justify-center w-8 h-8 rounded-xl font-orbitron font-black text-xs ${
-                              isGold ? 'bg-yellow-400 text-black shadow-[0_0_15px_rgba(250,204,21,0.8)]' :
-                              isSilver ? 'bg-slate-300 text-black shadow-[0_0_15px_rgba(203,213,225,0.8)]' :
-                              isBronze ? 'bg-amber-600 text-white shadow-[0_0_15px_rgba(217,119,6,0.8)]' :
-                              'bg-gray-800 text-gray-300 border border-gray-700'
-                            }`}>
-                              #{g.officialRank}
-                            </span>
-                          </td>
-
-                          {/* Game ID */}
-                          <td className="p-4 font-bold font-mono text-cyan-400 text-xs">
-                            #{g.game_id}
-                          </td>
-
-                          {/* Team Name & Members */}
-                          <td className="p-4">
-                            <div className="font-extrabold text-white text-base font-orbitron tracking-wide">
-                              {g.group_name}
-                            </div>
-                            <div className="text-xs text-gray-400 max-w-sm truncate mt-0.5">
-                              {(g.members || []).map(m => m.member_name).join(', ')}
-                            </div>
-                          </td>
-
-                          {/* Era 1 */}
-                          <td className="p-4 text-center font-bold text-amber-300 text-xs bg-amber-950/10">
-                            {formatTime(g.res.era1Time)}
-                          </td>
-
-                          {/* Era 2 */}
-                          <td className="p-4 text-center font-bold text-cyan-300 text-xs bg-cyan-950/10">
-                            {formatTime(g.res.era2Time)}
-                          </td>
-
-                          {/* Era 3 */}
-                          <td className="p-4 text-center font-bold text-purple-300 text-xs bg-purple-950/10">
-                            {formatTime(g.res.era3Time)}
-                          </td>
-
-                          {/* Total Raw Duration */}
-                          <td className="p-4 text-center text-gray-400 text-xs">
-                            {formatTime(g.res.actualDuration)}
-                          </td>
-
-                          {/* Adjusted Final Time */}
-                          <td className="p-4 text-center">
-                            <span className="font-black font-orbitron text-emerald-400 text-base drop-shadow-[0_0_10px_rgba(16,185,129,0.5)]">
-                              {formatTime(g.res.adjustedDuration)}
-                            </span>
-                            {g.res.bonus > 0 && (
-                              <span className="text-[10px] text-amber-400 font-bold block">
-                                -{g.res.bonus}s BONUS
-                              </span>
-                            )}
-                          </td>
-
-                          {/* Net Points */}
-                          <td className="p-4 text-right">
-                            <div className="font-black font-orbitron text-yellow-300 text-base">
-                              {g.res.netPoints} PTS
-                            </div>
-                            <div className="text-[10px] text-gray-400">
-                              <span>{g.res.earned} earned</span>
-                              {g.res.totalDeductions > 0 && (
-                                <span className="text-rose-400 font-bold ml-1">
-                                  (-{g.res.totalDeductions} pen)
-                                </span>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-
-          {/* Footer note */}
-          <footer className="text-center text-xs text-gray-500 font-mono tracking-widest pt-4">
-            ELECTRONIC DESIGN CLUB (EDC) // BLACKOUT PROTOCOL CHRONO-RADAR // SYMBITECH SIT PUNE
-          </footer>
-
         </div>
-      );
-    }
+    </header>
 
-    ReactDOM.createRoot(document.getElementById('root')).render(<LeaderboardApp />);
-  </script>
+    <!-- Main Content Area: Stack on mobile, side-by-side on desktop -->
+    <main class="flex-1 w-full flex flex-col lg:flex-row gap-8 z-10 min-h-0 pb-10 lg:pb-0">
+        
+        <!-- LEFT COLUMN: Main Stage -->
+        <div class="flex-1 flex flex-col gap-8 min-w-0">
+            
+            <!-- PODIUM (Top 3) -->
+            <section class="flex-1 premium-panel rounded-2xl flex flex-col relative overflow-visible p-4 md:p-8 shadow-panel mt-6 lg:mt-0">
+                <h2 class="lg:absolute top-6 left-8 text-xl font-display font-bold text-obsidian-600 uppercase tracking-widest flex items-center justify-center lg:justify-start gap-2 mb-4 lg:mb-0 w-full lg:w-auto">
+                    <i class="fas fa-crown text-metal-gold opacity-50"></i> Hall of Fame
+                </h2>
+
+                <div class="flex-1 flex flex-col lg:flex-row justify-center items-center lg:items-end gap-12 lg:gap-6 xl:gap-12 pb-6 lg:pt-16 mt-4 lg:mt-0">
+                    
+                    <!-- SILVER (2nd) - order 2 on mobile, order 1 on desktop -->
+                    <div class="rank-card premium-panel border-metal-silver rounded-xl w-full max-w-[320px] lg:w-64 p-6 flex flex-col items-center relative lg:mb-8 shadow-glow-silver order-2 lg:order-1">
+                        <div class="pedestal"></div>
+                        <!-- Rank Badge -->
+                        <div class="absolute -top-6 bg-obsidian-900 border-2 border-metal-silver w-12 h-12 rounded-full flex items-center justify-center font-display font-bold text-2xl text-metal-silver shadow-[0_0_15px_rgba(226,232,240,0.5)] z-10">2</div>
+                        <!-- Trophy Icon -->
+                        <div class="relative w-16 h-16 mb-4 mt-2">
+                            <i class="fas fa-trophy text-6xl text-metal-silver absolute inset-0 text-center drop-shadow-[0_0_10px_rgba(226,232,240,0.8)]"></i>
+                        </div>
+                        
+                        <h3 class="text-xl font-display font-bold text-white mb-1 truncate w-full text-center" id="p2-name">Shadow Assassins</h3>
+                        <div class="bg-obsidian-900/80 text-metal-silverDark text-xs px-3 py-1 rounded font-mono border border-obsidian-600 mb-4" id="p2-id">#0991</div>
+                        
+                        <div class="w-full bg-obsidian-800 rounded p-3 border border-obsidian-700/50">
+                            <p class="text-[10px] text-metal-silverDark uppercase tracking-wider mb-1 font-bold">Members</p>
+                            <p class="text-sm font-medium text-gray-300 truncate" id="p2-mem">Dave, Eve, Frank</p>
+                        </div>
+                        
+                        <div class="mt-4 w-full flex justify-between items-end border-t border-obsidian-700 pt-3">
+                            <span class="text-xs font-bold text-metal-silverDark uppercase">Score</span>
+                            <span class="font-display font-bold text-2xl text-white leading-none" id="p2-pts">4,250</span>
+                        </div>
+                    </div>
+
+                    <!-- GOLD (1st) - order 1 on mobile, order 2 on desktop -->
+                    <div class="rank-card premium-panel border-metal-gold rounded-xl w-full max-w-[360px] lg:w-72 p-8 flex flex-col items-center relative z-20 shadow-glow-gold order-1 lg:order-2">
+                        <div class="pedestal" style="background: radial-gradient(ellipse at top, rgba(255,215,0,0.15) 0%, transparent 70%);"></div>
+                        <!-- Rank Badge -->
+                        <div class="absolute -top-8 bg-obsidian-900 border-2 border-metal-gold w-16 h-16 rounded-full flex items-center justify-center font-display font-black text-4xl text-metal-gold shadow-[0_0_25px_rgba(255,215,0,0.6)] z-10">1</div>
+                        <!-- Trophy Icon -->
+                        <div class="relative w-24 h-24 mb-4 mt-2">
+                            <i class="fas fa-trophy text-[80px] text-metal-gold absolute inset-0 text-center drop-shadow-[0_0_15px_rgba(255,215,0,0.8)]"></i>
+                        </div>
+                        
+                        <h3 class="text-3xl font-display font-bold text-white mb-2 truncate w-full text-center text-gradient-gold" id="p1-name">Nightcrawlers</h3>
+                        <div class="bg-obsidian-900/80 text-metal-gold text-sm px-4 py-1 rounded-full font-mono border border-metal-gold/30 mb-5 shadow-[inset_0_0_10px_rgba(255,215,0,0.1)]" id="p1-id">#1042</div>
+                        
+                        <div class="w-full bg-obsidian-800/80 rounded-lg p-4 border border-metal-gold/20">
+                            <p class="text-[11px] text-metal-gold uppercase tracking-wider mb-1 font-bold">Members</p>
+                            <p class="text-base font-medium text-white truncate" id="p1-mem">Alice, Bob, Charlie</p>
+                        </div>
+                        
+                        <div class="mt-5 w-full flex justify-between items-end border-t border-metal-gold/30 pt-4">
+                            <span class="text-sm font-bold text-metal-gold uppercase tracking-widest">Score</span>
+                            <span class="font-display font-black text-4xl text-white leading-none drop-shadow-[0_2px_4px_rgba(0,0,0,1)]" id="p1-pts">5,100</span>
+                        </div>
+                    </div>
+
+                    <!-- BRONZE (3rd) - order 3 on both -->
+                    <div class="rank-card premium-panel border-metal-bronze rounded-xl w-full max-w-[320px] lg:w-64 p-6 flex flex-col items-center relative lg:mb-8 shadow-glow-bronze order-3 lg:order-3">
+                        <div class="pedestal"></div>
+                        <!-- Rank Badge -->
+                        <div class="absolute -top-6 bg-obsidian-900 border-2 border-metal-bronze w-12 h-12 rounded-full flex items-center justify-center font-display font-bold text-2xl text-metal-bronze shadow-[0_0_15px_rgba(229,138,62,0.5)] z-10">3</div>
+                        <!-- Trophy Icon -->
+                        <div class="relative w-16 h-16 mb-4 mt-2">
+                            <i class="fas fa-trophy text-6xl text-metal-bronze absolute inset-0 text-center drop-shadow-[0_0_10px_rgba(229,138,62,0.8)]"></i>
+                        </div>
+                        
+                        <h3 class="text-xl font-display font-bold text-white mb-1 truncate w-full text-center" id="p3-name">Neon Phantoms</h3>
+                        <div class="bg-obsidian-900/80 text-metal-bronzeDark text-xs px-3 py-1 rounded font-mono border border-obsidian-600 mb-4" id="p3-id">#1105</div>
+                        
+                        <div class="w-full bg-obsidian-800 rounded p-3 border border-obsidian-700/50">
+                            <p class="text-[10px] text-metal-bronzeDark uppercase tracking-wider mb-1 font-bold">Members</p>
+                            <p class="text-sm font-medium text-gray-300 truncate" id="p3-mem">Grace, Heidi, Ivan</p>
+                        </div>
+                        
+                        <div class="mt-4 w-full flex justify-between items-end border-t border-obsidian-700 pt-3">
+                            <span class="text-xs font-bold text-metal-bronzeDark uppercase">Score</span>
+                            <span class="font-display font-bold text-2xl text-white leading-none" id="p3-pts">3,890</span>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- LIVE MATCH PANEL -->
+            <section id="live-section" class="lg:h-48 shrink-0 bg-obsidian-900 rounded-2xl relative overflow-hidden live-panel-border cut-corner flex flex-col lg:flex-row mt-4 lg:mt-0">
+                <!-- Background effects -->
+                <div class="absolute inset-0 live-bg-effect opacity-50 pointer-events-none"></div>
+                <div class="absolute right-0 top-0 bottom-0 w-full lg:w-1/2 bg-gradient-to-t lg:bg-gradient-to-l from-neon-red/10 to-transparent pointer-events-none"></div>
+
+                <!-- Vertical/Horizontal LIVE tag -->
+                <div class="w-full lg:w-16 h-10 lg:h-auto bg-neon-red/10 border-b lg:border-b-0 lg:border-r border-neon-red/30 flex lg:flex-col items-center justify-center relative shadow-[inset_0_0_20px_rgba(255,42,42,0.2)]">
+                    <i class="fas fa-satellite-dish text-neon-red lg:mb-4 animate-pulse mr-2 lg:mr-0"></i>
+                    <span class="text-neon-red font-display font-bold tracking-widest uppercase text-sm lg:text-lg transform lg:-rotate-90 origin-center whitespace-nowrap lg:absolute">
+                        LIVE
+                    </span>
+                </div>
+
+                <!-- Match Data -->
+                <div class="flex-1 flex flex-col md:flex-row items-center justify-between p-6 lg:p-8 relative z-10 gap-6 md:gap-0">
+                    
+                    <div class="flex items-center gap-4 lg:gap-6 w-full md:w-1/2 lg:w-1/3 justify-center md:justify-start">
+                        <div class="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-obsidian-800 border-2 border-obsidian-600 p-1 shadow-[0_0_15px_rgba(0,0,0,0.8)] relative flex-shrink-0">
+                            <img src="https://placehold.co/100x100/161B26/00E5FF?text=CP" id="live-logo" alt="Cyber Punks Logo" class="w-full h-full object-cover rounded-lg grayscale contrast-125">
+                            <div class="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-neon-red shadow-[0_0_10px_#FF2A2A] animate-ping"></div>
+                            <div class="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-neon-red border-2 border-obsidian-900"></div>
+                        </div>
+                        <div>
+                            <h4 class="text-2xl md:text-3xl font-display font-bold text-white tracking-wide text-center md:text-left" id="live-name">Cyber Punks</h4>
+                            <div class="flex items-center justify-center md:justify-start gap-2 mt-1">
+                                <span class="bg-neon-red/20 text-neon-red border border-neon-red/50 text-[10px] px-2 py-0.5 rounded uppercase font-bold tracking-wider" id="live-mode">Playing</span>
+                                <span class="text-obsidian-600 font-mono text-sm" id="live-id">#1208</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 flex justify-center items-center gap-8 lg:gap-12 w-full md:w-auto mt-2 md:mt-0">
+                        <!-- Points -->
+                        <div class="flex flex-col items-center">
+                            <span class="text-obsidian-600 text-xs font-bold uppercase tracking-widest mb-1">Points</span>
+                            <span class="font-display font-black text-4xl md:text-5xl text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]" id="live-pts">850</span>
+                        </div>
+                        
+                        <!-- Divider -->
+                        <div class="h-16 w-px bg-obsidian-600/50 rotate-12"></div>
+                        
+                        <!-- Time -->
+                        <div class="flex flex-col items-center">
+                            <span class="text-obsidian-600 text-xs font-bold uppercase tracking-widest mb-1">Time</span>
+                            <span class="font-mono font-bold text-4xl md:text-5xl text-neon-red drop-shadow-[0_0_15px_rgba(255,42,42,0.5)] tracking-tight" id="live-time">04:32</span>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+
+        <!-- RIGHT COLUMN: Scrolling Leaderboard -->
+        <aside class="w-full lg:w-1/3 lg:min-w-[400px] h-[600px] lg:h-auto premium-panel rounded-2xl flex flex-col overflow-hidden shadow-panel cut-corner mt-4 lg:mt-0">
+            
+            <!-- Sticky Header -->
+            <div class="bg-obsidian-800 border-b border-obsidian-600 p-5 flex justify-between items-center z-10 shadow-[0_4px_10px_rgba(0,0,0,0.5)]">
+                <h3 class="text-lg font-display font-bold text-white uppercase tracking-widest flex items-center gap-2">
+                    <i class="fas fa-list-ol text-neon-blue"></i> Leaderboard
+                </h3>
+                <span class="text-xs text-obsidian-600 font-bold uppercase border border-obsidian-600 rounded px-2 py-1">All Teams</span>
+            </div>
+            
+            <!-- Table Headers -->
+            <div class="grid grid-cols-12 gap-4 px-6 py-3 bg-obsidian-900/50 border-b border-obsidian-700/50 text-[10px] uppercase font-bold text-obsidian-600 tracking-wider sticky top-0 z-10">
+                <div class="col-span-2 text-center">Rnk</div>
+                <div class="col-span-7">Squad</div>
+                <div class="col-span-3 text-right">Pts</div>
+            </div>
+
+            <!-- Scrollable Content -->
+            <div id="rows" class="flex-1 overflow-y-auto scroll-container p-2 space-y-1"></div>
+        </aside>
+
+    </main>
+
+
+<div id="conn" style="position:fixed;right:12px;bottom:10px;z-index:50" class="text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded border border-obsidian-600 bg-obsidian-900/90 text-metal-silverDark">Connecting...</div>
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const mmss=s=>{s=Math.max(0,Math.floor(s||0));return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')};
+  const num=n=>Number(n||0).toLocaleString();
+  let state={groups:[],sessions:{},settings:{}};
+
+  function ranked(){
+    const st=state.settings||{};
+    const list=(state.groups||[]).filter(g=>(state.sessions[g.id]||{}).status==='Completed').map(g=>{
+      const s=state.sessions[g.id];
+      const actual=Number(s.actual_duration)||0;
+      const bonus=s.reward_type==='Extra Time'?Number(st.extratime_bonus)||0:0;
+      const adj=Math.max(0,actual-bonus);
+      const earned=(Number(s.score1)||0)+(Number(s.score2)||0)+(Number(s.score3)||0);
+      const cost=s.reward_cost_snapshot!==undefined?Number(s.reward_cost_snapshot):(s.reward_type==='Extra Time'?Number(st.extratime_cost):s.reward_type==='Hint'?Number(st.hint_cost):0);
+      return {g,adj,pts:Math.max(0,earned-(cost||0))};
+    });
+    list.sort((a,b)=>a.adj!==b.adj?a.adj-b.adj:b.pts-a.pts);
+    let r=1;
+    return list.map((x,i,arr)=>{ if(i>0&&(x.adj!==arr[i-1].adj||x.pts!==arr[i-1].pts)) r=i+1; return {...x,rank:r}; });
+  }
+  const members=g=>(g.members||[]).map(m=>m.member_name).join(', ');
+
+  function podium(slot,item){
+    const nameEl=$('p'+slot+'-name'); const card=nameEl.closest('.rank-card');
+    if(!item){ nameEl.textContent='---'; $('p'+slot+'-id').textContent='#----'; $('p'+slot+'-mem').textContent='Awaiting finisher'; $('p'+slot+'-pts').textContent='0'; card.style.opacity='.35'; return; }
+    card.style.opacity='1';
+    nameEl.textContent=item.g.group_name;
+    $('p'+slot+'-id').textContent='#'+item.g.game_id+' \u00b7 '+mmss(item.adj);
+    $('p'+slot+'-mem').textContent=members(item.g);
+    $('p'+slot+'-pts').textContent=num(item.pts);
+  }
+
+  function pickLive(){
+    const arr=(state.groups||[]).map(g=>({g,s:state.sessions[g.id]})).filter(x=>x.s);
+    const run=arr.find(x=>x.s.running); if(run) return {...run,mode:'Playing'};
+    const ip=arr.filter(x=>x.s.status==='In Progress').sort((a,b)=>(b.s.updated_at||0)-(a.s.updated_at||0))[0];
+    return ip?{...ip,mode:'Up Next'}:null;
+  }
+  let live=null;
+  function logo(name){
+    const ini=(name||'?').split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const svg='<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#161B26"/><text x="50" y="62" font-family="Arial" font-weight="700" font-size="40" fill="#00E5FF" text-anchor="middle">'+esc(ini)+'</text></svg>';
+    return 'data:image/svg+xml;utf8,'+encodeURIComponent(svg);
+  }
+  function renderLive(){
+    live=pickLive();
+    if(!live){
+      $('live-name').textContent='Waiting for next team'; $('live-mode').textContent='Standby'; $('live-id').textContent='#----';
+      $('live-pts').textContent='0'; $('live-time').textContent='00:00'; $('live-logo').src=logo('?');
+      return;
+    }
+    const s=live.s;
+    $('live-name').textContent=live.g.group_name; $('live-mode').textContent=live.mode; $('live-id').textContent='#'+live.g.game_id;
+    $('live-pts').textContent=num((Number(s.score1)||0)+(Number(s.score2)||0)+(Number(s.score3)||0));
+    $('live-logo').src=logo(live.g.group_name);
+    tick();
+  }
+  function tick(){
+    if(!live) return;
+    const s=live.s;
+    const sec=(s.running&&s.started_at)?(Date.now()-s.started_at)/1000:(Number(s.actual_duration)||0);
+    $('live-time').textContent=mmss(sec);
+  }
+  setInterval(tick,250);
+
+  function render(){
+    const r=ranked();
+    podium(1,r[0]); podium(2,r[1]); podium(3,r[2]);
+    const rows=r.slice(3).map((x,i)=>'<div class="grid grid-cols-12 gap-4 px-4 py-3 items-center rounded-lg border border-transparent hover:border-obsidian-600 hover:bg-obsidian-800 transition-all cursor-default '+(i%2===0?'bg-obsidian-800/30':'')+'">'
+      +'<div class="col-span-2 text-center font-display font-bold text-xl text-metal-silverDark">'+x.rank+'</div>'
+      +'<div class="col-span-7 flex flex-col justify-center"><span class="font-bold text-white truncate">'+esc(x.g.group_name)+'</span>'
+      +'<span class="text-[10px] text-gray-400 font-mono truncate">ID #'+esc(x.g.game_id)+' | '+esc(members(x.g))+'</span></div>'
+      +'<div class="col-span-3 text-right"><div class="font-display font-bold text-lg text-white leading-tight">'+num(x.pts)+'</div><div class="text-[10px] text-gray-400 font-mono">'+mmss(x.adj)+'</div></div></div>');
+    $('rows').innerHTML=rows.length?rows.join(''):'<div class="py-10 text-center text-xs text-metal-silverDark uppercase tracking-widest">'+(r.length?'':'No finished teams yet')+'</div>';
+    renderLive();
+  }
+
+  function setConn(ok){ const c=$('conn'); c.textContent=ok?'\u25CF Live':'Reconnecting...'; c.style.color=ok?'#34d399':'#FF2A2A'; }
+  const es=new EventSource('/api/stream');
+  es.onopen=()=>setConn(true);
+  es.onerror=()=>setConn(false);
+  es.onmessage=ev=>{ try{ state=JSON.parse(ev.data); render(); setConn(true);}catch(e){} };
+  render();
+})();
+</script>
 </body>
 </html>

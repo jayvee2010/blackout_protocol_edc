@@ -64,9 +64,25 @@ http.createServer((req, res) => {
   }
 
   // EDC Logo asset endpoint
-  if (url === '/edc-logo.jpg' || url === '/logo.jpg' || url === '/logo.png') {
+  if (url === '/edc-logo.jpg' || url === '/logo.jpg' || url === '/logo.png' || url === '/logo.jpeg') {
     return fs.readFile(path.join(__dirname, 'edc-logo.jpg'), (err, data) =>
       err ? send(404, 'text/plain', 'Logo not found') : send(200, 'image/jpeg', data));
+  }
+
+  // SSE Stream endpoint
+  if (url === '/api/stream') {
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+      'Access-Control-Allow-Origin': '*'
+    });
+    res.write('data: ' + JSON.stringify(state) + '\n\n');
+    const interval = setInterval(() => {
+      res.write('data: ' + JSON.stringify(state) + '\n\n');
+    }, 1500);
+    req.on('close', () => clearInterval(interval));
+    return;
   }
   
   if (url === '/api/info') return send(200, 'application/json', JSON.stringify({ urls: lanUrls() }));
