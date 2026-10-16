@@ -253,12 +253,12 @@
         
         <!-- LEFT HERO COLUMN: PODIUM (Top 3 Grand Champions) -->
         <div class="flex-1 flex flex-col min-w-0">
-            <section class="glass-card rounded-3xl p-5 md:p-6 flex flex-col justify-start shadow-panel-glow relative">
+            <section class="flex-1 glass-card rounded-3xl p-6 md:p-8 flex flex-col justify-between shadow-panel-glow relative min-h-[640px]">
                 
-                <div class="flex items-center justify-between border-b border-white/5 pb-3 mb-2">
+                <div class="flex items-center justify-between border-b border-white/5 pb-4 mb-2">
                     <div class="flex items-center gap-3">
-                        <i class="fas fa-trophy text-cyber-gold text-lg"></i>
-                        <h2 class="text-lg md:text-xl font-serif font-black tracking-widest uppercase text-white">
+                        <i class="fas fa-trophy text-cyber-gold text-xl"></i>
+                        <h2 class="text-xl md:text-2xl font-serif font-black tracking-widest uppercase text-white">
                             Hall of Champions
                         </h2>
                     </div>
@@ -267,137 +267,137 @@
                     </span>
                 </div>
 
-                <!-- 3 PODIUM PEDESTALS -->
-                <div class="flex flex-col lg:flex-row justify-center items-center lg:items-end gap-8 lg:gap-5 xl:gap-7 mt-8 pb-3">
+                <!-- 3 ENLARGED PODIUM PEDESTALS -->
+                <div class="flex-1 flex flex-col lg:flex-row justify-center items-center lg:items-end gap-10 lg:gap-6 xl:gap-8 my-auto py-6">
                     
                     <!-- 2ND PLACE (SILVER) - Left on desktop, 2nd on mobile -->
-                    <div class="podium-card glass-card rounded-2xl border-2 border-cyber-silver/70 w-full max-w-[320px] lg:w-64 p-6 flex flex-col items-center relative order-2 lg:order-1 shadow-podium-silver">
+                    <div class="podium-card glass-card rounded-2xl border-2 border-cyber-silver/70 w-full max-w-[340px] lg:w-72 xl:w-80 p-7 flex flex-col items-center relative order-2 lg:order-1 shadow-podium-silver">
                         <div class="pedestal-reflection"></div>
                         
                         <!-- Rank 2 Badge -->
-                        <div class="absolute -top-6 bg-obsidian-950 border-2 border-cyber-silver w-12 h-12 rounded-full flex items-center justify-center font-display font-extrabold text-2xl text-cyber-silver shadow-[0_0_20px_rgba(226,232,240,0.6)] z-10">
+                        <div class="absolute -top-7 bg-obsidian-950 border-2 border-cyber-silver w-14 h-14 rounded-full flex items-center justify-center font-display font-black text-2xl text-cyber-silver shadow-[0_0_25px_rgba(226,232,240,0.6)] z-10">
                             2
                         </div>
                         
                         <!-- Silver Laurel / Trophy Icon -->
-                        <div class="relative w-16 h-16 my-3 flex items-center justify-center">
-                            <i class="fas fa-medal text-5xl text-cyber-silver drop-shadow-[0_0_15px_rgba(226,232,240,0.8)]"></i>
+                        <div class="relative w-20 h-20 my-3 flex items-center justify-center">
+                            <i class="fas fa-medal text-6xl text-cyber-silver drop-shadow-[0_0_15px_rgba(226,232,240,0.8)]"></i>
                         </div>
                         
-                        <div class="px-3 py-0.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono font-bold text-cyber-silver uppercase tracking-wider mb-2" id="p2-category">
+                        <div class="px-3.5 py-1 rounded-full bg-white/5 border border-white/10 text-[11px] font-mono font-bold text-cyber-silver uppercase tracking-wider mb-2.5" id="p2-category">
                             BLACKOUT PROTOCOL
                         </div>
 
-                        <h3 class="text-2xl font-display font-bold text-white text-center truncate w-full tracking-wide" id="p2-name">
+                        <h3 class="text-2xl xl:text-3xl font-display font-extrabold text-white text-center truncate w-full tracking-wide" id="p2-name">
                             ---
                         </h3>
-                        <div class="font-mono text-xs font-bold text-cyber-silver/80 mt-1 mb-4" id="p2-id">
+                        <div class="font-mono text-sm font-bold text-cyber-silver/80 mt-1 mb-5" id="p2-id">
                             #----
                         </div>
                         
                         <!-- Members Card -->
-                        <div class="w-full bg-obsidian-950/80 rounded-xl p-3 border border-white/5 mb-4">
-                            <p class="text-[9px] font-mono font-bold text-gray-400 uppercase tracking-wider mb-1">Squad Members</p>
-                            <p class="text-xs font-semibold text-gray-200 truncate" id="p2-mem">Awaiting Final Results</p>
+                        <div class="w-full bg-obsidian-950/80 rounded-xl p-4 border border-white/5 mb-5 shadow-inner">
+                            <p class="text-[10px] font-mono font-bold text-gray-400 uppercase tracking-wider mb-1.5">Squad Members</p>
+                            <p class="text-sm font-semibold text-gray-200 truncate" id="p2-mem">Awaiting Final Results</p>
                         </div>
                         
                         <!-- Stats Breakdown (Time + Net Points) -->
-                        <div class="w-full flex justify-between items-end border-t border-white/10 pt-3">
+                        <div class="w-full flex justify-between items-end border-t border-white/10 pt-4">
                             <div>
-                                <span class="text-[10px] font-mono font-bold text-gray-400 uppercase block">Total Time</span>
-                                <span class="font-mono font-extrabold text-base text-cyber-silver" id="p2-time">--:--</span>
+                                <span class="text-[11px] font-mono font-bold text-gray-400 uppercase block">Total Time</span>
+                                <span class="font-mono font-black text-lg text-cyber-silver" id="p2-time">--:--</span>
                             </div>
                             <div class="text-right">
-                                <span class="text-[10px] font-mono font-bold text-gray-400 uppercase block">Verified Pts</span>
-                                <span class="font-display font-black text-2xl text-white leading-none" id="p2-pts">0</span>
+                                <span class="text-[11px] font-mono font-bold text-gray-400 uppercase block">Verified Pts</span>
+                                <span class="font-display font-black text-3xl text-white leading-none" id="p2-pts">0</span>
                             </div>
                         </div>
                     </div>
 
                     <!-- 1ST PLACE (GOLD) - Center & Elevated -->
-                    <div class="podium-card glass-card rounded-2xl border-2 border-cyber-gold w-full max-w-[360px] lg:w-72 p-7 flex flex-col items-center relative z-20 order-1 lg:order-2 shadow-podium-gold lg:-translate-y-4">
+                    <div class="podium-card glass-card rounded-2xl border-2 border-cyber-gold w-full max-w-[380px] lg:w-80 xl:w-96 p-8 flex flex-col items-center relative z-20 order-1 lg:order-2 shadow-podium-gold lg:-translate-y-6">
                         <div class="pedestal-reflection" style="background: radial-gradient(ellipse at center, rgba(255, 215, 0, 0.25) 0%, transparent 70%);"></div>
                         
                         <!-- Grand Champion Crown Badge -->
-                        <div class="absolute -top-8 bg-obsidian-950 border-2 border-cyber-gold w-16 h-16 rounded-full flex items-center justify-center font-display font-black text-3xl text-cyber-gold shadow-[0_0_30px_rgba(255,215,0,0.8)] z-10 animate-shimmer-crown">
-                            <i class="fas fa-crown text-cyber-gold text-2xl"></i>
+                        <div class="absolute -top-9 bg-obsidian-950 border-2 border-cyber-gold w-18 h-18 w-[72px] h-[72px] rounded-full flex items-center justify-center font-display font-black text-3xl text-cyber-gold shadow-[0_0_35px_rgba(255,215,0,0.85)] z-10 animate-shimmer-crown">
+                            <i class="fas fa-crown text-cyber-gold text-3xl"></i>
                         </div>
                         
                         <!-- Trophy Icon -->
-                        <div class="relative w-20 h-20 my-2 flex items-center justify-center">
-                            <i class="fas fa-trophy text-6xl text-cyber-gold drop-shadow-[0_0_25px_rgba(255,215,0,0.9)]"></i>
+                        <div class="relative w-24 h-24 my-3 flex items-center justify-center">
+                            <i class="fas fa-trophy text-7xl text-cyber-gold drop-shadow-[0_0_30px_rgba(255,215,0,0.95)]"></i>
                         </div>
                         
-                        <div class="px-3 py-0.5 rounded-full bg-cyber-gold/10 border border-cyber-gold/30 text-[10px] font-mono font-extrabold text-cyber-gold uppercase tracking-wider mb-2" id="p1-category">
+                        <div class="px-4 py-1 rounded-full bg-cyber-gold/10 border border-cyber-gold/30 text-[11px] font-mono font-extrabold text-cyber-gold uppercase tracking-wider mb-2.5" id="p1-category">
                             BLACKOUT PROTOCOL
                         </div>
 
-                        <h3 class="text-3xl font-display font-extrabold text-gradient-gold text-center truncate w-full tracking-wider" id="p1-name">
+                        <h3 class="text-3xl xl:text-4xl font-display font-black text-gradient-gold text-center truncate w-full tracking-wider" id="p1-name">
                             ---
                         </h3>
-                        <div class="font-mono text-sm font-bold text-cyber-gold mt-1 mb-4" id="p1-id">
+                        <div class="font-mono text-base font-bold text-cyber-gold mt-1 mb-5" id="p1-id">
                             #----
                         </div>
                         
                         <!-- Members Card -->
-                        <div class="w-full bg-obsidian-950/90 rounded-xl p-3.5 border border-cyber-gold/20 mb-4 shadow-inner">
-                            <p class="text-[9px] font-mono font-bold text-cyber-gold uppercase tracking-wider mb-1">Squad Members</p>
-                            <p class="text-sm font-bold text-white truncate" id="p1-mem">Awaiting Champion</p>
+                        <div class="w-full bg-obsidian-950/90 rounded-xl p-4.5 p-4 border border-cyber-gold/20 mb-5 shadow-inner">
+                            <p class="text-[10px] font-mono font-bold text-cyber-gold uppercase tracking-wider mb-1.5">Squad Members</p>
+                            <p class="text-base font-bold text-white truncate" id="p1-mem">Awaiting Champion</p>
                         </div>
                         
                         <!-- Stats Breakdown (Time + Net Points) -->
-                        <div class="w-full flex justify-between items-end border-t border-cyber-gold/30 pt-3">
+                        <div class="w-full flex justify-between items-end border-t border-cyber-gold/30 pt-4">
                             <div>
-                                <span class="text-[10px] font-mono font-bold text-cyber-gold uppercase block tracking-wider">Fastest Adjusted Time</span>
-                                <span class="font-mono font-black text-lg text-white" id="p1-time">--:--</span>
+                                <span class="text-[11px] font-mono font-bold text-cyber-gold uppercase block tracking-wider">Fastest Adjusted Time</span>
+                                <span class="font-mono font-black text-xl text-white" id="p1-time">--:--</span>
                             </div>
                             <div class="text-right">
-                                <span class="text-[10px] font-mono font-bold text-cyber-gold uppercase block tracking-wider">Score</span>
-                                <span class="font-display font-black text-3xl text-gradient-gold leading-none" id="p1-pts">0</span>
+                                <span class="text-[11px] font-mono font-bold text-cyber-gold uppercase block tracking-wider">Score</span>
+                                <span class="font-display font-black text-4xl text-gradient-gold leading-none" id="p1-pts">0</span>
                             </div>
                         </div>
                     </div>
 
                     <!-- 3RD PLACE (BRONZE) - Right on desktop, 3rd on mobile -->
-                    <div class="podium-card glass-card rounded-2xl border-2 border-cyber-bronze/70 w-full max-w-[320px] lg:w-64 p-6 flex flex-col items-center relative order-3 lg:order-3 shadow-podium-bronze">
+                    <div class="podium-card glass-card rounded-2xl border-2 border-cyber-bronze/70 w-full max-w-[340px] lg:w-72 xl:w-80 p-7 flex flex-col items-center relative order-3 lg:order-3 shadow-podium-bronze">
                         <div class="pedestal-reflection"></div>
                         
                         <!-- Rank 3 Badge -->
-                        <div class="absolute -top-6 bg-obsidian-950 border-2 border-cyber-bronze w-12 h-12 rounded-full flex items-center justify-center font-display font-extrabold text-2xl text-cyber-bronze shadow-[0_0_20px_rgba(255,158,74,0.6)] z-10">
+                        <div class="absolute -top-7 bg-obsidian-950 border-2 border-cyber-bronze w-14 h-14 rounded-full flex items-center justify-center font-display font-black text-2xl text-cyber-bronze shadow-[0_0_25px_rgba(255,158,74,0.6)] z-10">
                             3
                         </div>
                         
                         <!-- Bronze Laurel / Trophy Icon -->
-                        <div class="relative w-16 h-16 my-3 flex items-center justify-center">
-                            <i class="fas fa-award text-5xl text-cyber-bronze drop-shadow-[0_0_15px_rgba(255,158,74,0.8)]"></i>
+                        <div class="relative w-20 h-20 my-3 flex items-center justify-center">
+                            <i class="fas fa-award text-6xl text-cyber-bronze drop-shadow-[0_0_15px_rgba(255,158,74,0.8)]"></i>
                         </div>
                         
-                        <div class="px-3 py-0.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono font-bold text-cyber-bronze uppercase tracking-wider mb-2" id="p3-category">
+                        <div class="px-3.5 py-1 rounded-full bg-white/5 border border-white/10 text-[11px] font-mono font-bold text-cyber-bronze uppercase tracking-wider mb-2.5" id="p3-category">
                             BLACKOUT PROTOCOL
                         </div>
 
-                        <h3 class="text-2xl font-display font-bold text-white text-center truncate w-full tracking-wide" id="p3-name">
+                        <h3 class="text-2xl xl:text-3xl font-display font-extrabold text-white text-center truncate w-full tracking-wide" id="p3-name">
                             ---
                         </h3>
-                        <div class="font-mono text-xs font-bold text-cyber-bronze/80 mt-1 mb-4" id="p3-id">
+                        <div class="font-mono text-sm font-bold text-cyber-bronze/80 mt-1 mb-5" id="p3-id">
                             #----
                         </div>
                         
                         <!-- Members Card -->
-                        <div class="w-full bg-obsidian-950/80 rounded-xl p-3 border border-white/5 mb-4">
-                            <p class="text-[9px] font-mono font-bold text-gray-400 uppercase tracking-wider mb-1">Squad Members</p>
-                            <p class="text-xs font-semibold text-gray-200 truncate" id="p3-mem">Awaiting Final Results</p>
+                        <div class="w-full bg-obsidian-950/80 rounded-xl p-4 border border-white/5 mb-5 shadow-inner">
+                            <p class="text-[10px] font-mono font-bold text-gray-400 uppercase tracking-wider mb-1.5">Squad Members</p>
+                            <p class="text-sm font-semibold text-gray-200 truncate" id="p3-mem">Awaiting Final Results</p>
                         </div>
                         
                         <!-- Stats Breakdown (Time + Net Points) -->
-                        <div class="w-full flex justify-between items-end border-t border-white/10 pt-3">
+                        <div class="w-full flex justify-between items-end border-t border-white/10 pt-4">
                             <div>
-                                <span class="text-[10px] font-mono font-bold text-gray-400 uppercase block">Total Time</span>
+                                <span class="text-[11px] font-mono font-bold text-gray-400 uppercase block">Total Time</span>
                                 <span class="font-mono font-extrabold text-base text-cyber-bronze" id="p3-time">--:--</span>
                             </div>
                             <div class="text-right">
-                                <span class="text-[10px] font-mono font-bold text-gray-400 uppercase block">Verified Pts</span>
-                                <span class="font-display font-black text-2xl text-white leading-none" id="p3-pts">0</span>
+                                <span class="text-[11px] font-mono font-bold text-gray-400 uppercase block">Verified Pts</span>
+                                <span class="font-display font-black text-3xl text-white leading-none" id="p3-pts">0</span>
                             </div>
                         </div>
                     </div>
@@ -405,7 +405,7 @@
                 </div>
 
                 <!-- Footer Hint -->
-                <div class="text-center text-[11px] font-mono text-gray-500 uppercase tracking-widest pt-2 border-t border-white/5">
+                <div class="text-center text-[11px] font-mono text-gray-500 uppercase tracking-widest pt-3 border-t border-white/5">
                     Deterministic tie-breaking: Fastest Adjusted Time (Session Duration - Bonuses) &rarr; Net Points
                 </div>
             </section>
