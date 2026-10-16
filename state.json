@@ -1,0 +1,437 @@
+{
+  "groups": [
+    {
+      "id": "grp_1792145937722",
+      "game_id": 1013,
+      "group_name": "Sigma Males",
+      "status": "In Progress",
+      "members": [
+        {
+          "id": "m_0.1389289592060754",
+          "member_name": "Atharva Shelar"
+        },
+        {
+          "id": "m_0.8219045104821409",
+          "member_name": "Shaina Majumder"
+        },
+        {
+          "id": "m_0.7608398721391508",
+          "member_name": "Purab Chaudhari"
+        }
+      ]
+    },
+    {
+      "id": "grp_1792143135353",
+      "game_id": 1012,
+      "group_name": "DSA",
+      "status": "In Progress",
+      "members": [
+        {
+          "id": "m_0.990374952124801",
+          "member_name": "Debsuvra"
+        },
+        {
+          "id": "m_0.16412280512727495",
+          "member_name": "Soumya"
+        },
+        {
+          "id": "m_0.427474634129559",
+          "member_name": "Avni"
+        }
+      ]
+    },
+    {
+      "id": "grp_1792143019932",
+      "game_id": 1011,
+      "group_name": "SSS",
+      "status": "In Progress",
+      "members": [
+        {
+          "id": "m_0.11996721959660206",
+          "member_name": "Sairam"
+        },
+        {
+          "id": "m_0.02923239831193447",
+          "member_name": "Shlok"
+        },
+        {
+          "id": "m_0.8882860019224159",
+          "member_name": "Saksham"
+        }
+      ]
+    },
+    {
+      "id": "grp_1792142635501",
+      "game_id": 1010,
+      "group_name": "Maddy",
+      "status": "In Progress",
+      "members": [
+        {
+          "id": "m_0.08971457070494548",
+          "member_name": "Atharva Walvikar"
+        },
+        {
+          "id": "m_0.3845669495749686",
+          "member_name": "Aditya"
+        },
+        {
+          "id": "m_0.9255175468208744",
+          "member_name": "."
+        }
+      ]
+    },
+    {
+      "id": "grp_1792142304720",
+      "game_id": 1009,
+      "group_name": "The circuit",
+      "status": "In Progress",
+      "members": [
+        {
+          "id": "m_0.27432905099948657",
+          "member_name": "Viral"
+        },
+        {
+          "id": "m_0.33404037280684307",
+          "member_name": "Sachetan"
+        },
+        {
+          "id": "m_0.6800962641609248",
+          "member_name": "."
+        }
+      ]
+    },
+    {
+      "id": "grp_1792141982441",
+      "game_id": 1008,
+      "group_name": "BJT",
+      "status": "Registered",
+      "members": [
+        {
+          "id": "m_0.8082993101551174",
+          "member_name": "Arnav"
+        },
+        {
+          "id": "m_0.8757656866360377",
+          "member_name": "Ashi"
+        },
+        {
+          "id": "m_0.005944744632339516",
+          "member_name": "Amrita"
+        },
+        {
+          "id": "m_0.05022601208986399",
+          "member_name": "Rushi"
+        }
+      ]
+    },
+    {
+      "id": "grp_1792141855519",
+      "game_id": 1007,
+      "group_name": "Ching chong",
+      "status": "In Progress",
+      "members": [
+        {
+          "id": "m_0.8567768614922819",
+          "member_name": "Jayani"
+        },
+        {
+          "id": "m_0.986232903389712",
+          "member_name": "Ishika"
+        },
+        {
+          "id": "m_0.8629999312816237",
+          "member_name": "Tanvi"
+        },
+        {
+          "id": "m_0.6615223273957113",
+          "member_name": "Gauri"
+        },
+        {
+          "id": "m_0.9260990654105494",
+          "member_name": "Rudrasnsh"
+        },
+        {
+          "id": "m_0.7533619190338359",
+          "member_name": "Sumit"
+        }
+      ]
+    },
+    {
+      "id": "grp_1792141420026",
+      "game_id": 1006,
+      "group_name": "SY",
+      "status": "In Progress",
+      "members": [
+        {
+          "id": "m_0.8276251263793886",
+          "member_name": "Sonakshi"
+        },
+        {
+          "id": "m_0.23811252161845153",
+          "member_name": "Sujal"
+        },
+        {
+          "id": "m_0.16270745036173362",
+          "member_name": "Shubhashini"
+        },
+        {
+          "id": "m_0.023939627044444856",
+          "member_name": "Yashvi"
+        },
+        {
+          "id": "m_0.8805069086714583",
+          "member_name": "Shubhashree"
+        },
+        {
+          "id": "m_0.9714033777451913",
+          "member_name": "Suvigya"
+        }
+      ]
+    },
+    {
+      "id": "grp_1792139781834",
+      "game_id": 1005,
+      "group_name": "Steam",
+      "status": "In Progress",
+      "members": [
+        {
+          "id": "m_0.3635871244520129",
+          "member_name": "Shreya"
+        },
+        {
+          "id": "m_0.8775291918839722",
+          "member_name": "Samridhi"
+        },
+        {
+          "id": "m_0.3992290876185989",
+          "member_name": "."
+        }
+      ]
+    },
+    {
+      "id": "grp_1792139429961",
+      "game_id": 1004,
+      "group_name": "Doc team",
+      "status": "In Progress",
+      "members": [
+        {
+          "id": "m_0.9872760025646009"
+        },
+        {
+          "id": "m_0.42279000165078096"
+        },
+        {
+          "id": "m_0.060364259607692095"
+        },
+        {
+          "id": "m_0.7902101613623352"
+        },
+        {
+          "id": "m_0.09132624015420776"
+        }
+      ]
+    },
+    {
+      "id": "grp_1792139023312",
+      "game_id": 1002,
+      "group_name": "Teen Titans ",
+      "status": "In Progress",
+      "members": [
+        {
+          "id": "m_0.7753515087726738",
+          "member_name": "Sagarika"
+        },
+        {
+          "id": "m_0.8330920938494587",
+          "member_name": "Shruti"
+        },
+        {
+          "id": "m_0.36393727866935033",
+          "member_name": "Shaswatee"
+        }
+      ]
+    },
+    {
+      "id": "grp_1792138847980",
+      "game_id": 1001,
+      "group_name": "kawai",
+      "status": "In Progress",
+      "members": [
+        {
+          "id": "m_0.08239921251545235"
+        },
+        {
+          "id": "m_0.016025469332420772"
+        },
+        {
+          "id": "m_0.2403242907754668"
+        }
+      ]
+    }
+  ],
+  "sessions": {
+    "grp_1792138847980": {
+      "score1": 0,
+      "score2": 500,
+      "score3": 34,
+      "reward_type": null,
+      "actual_duration": 0,
+      "running": false,
+      "status": "In Progress",
+      "scores_saved": true,
+      "updated_at": 1792138870173
+    },
+    "grp_1792139023312": {
+      "score1": 6,
+      "score2": 0,
+      "score3": 0,
+      "reward_type": "None",
+      "actual_duration": 0,
+      "running": true,
+      "status": "In Progress",
+      "scores_saved": true,
+      "updated_at": 1792139102221,
+      "reward_cost_snapshot": 0,
+      "started_at": 1792139102221
+    },
+    "grp_1792139429961": {
+      "score1": 0,
+      "score2": 300,
+      "score3": 50,
+      "reward_type": "Hint",
+      "actual_duration": 2,
+      "running": false,
+      "status": "In Progress",
+      "reward_cost_snapshot": 150,
+      "updated_at": 1792139451650,
+      "scores_saved": true,
+      "started_at": 1792139448783
+    },
+    "grp_1792139781834": {
+      "score1": 9,
+      "score2": 300,
+      "score3": 0,
+      "reward_type": "Hint",
+      "actual_duration": 0,
+      "running": false,
+      "status": "In Progress",
+      "scores_saved": true,
+      "updated_at": 1792139816721,
+      "reward_cost_snapshot": 150,
+      "started_at": 1792139816139
+    },
+    "grp_1792141420026": {
+      "score1": 6,
+      "score2": 400,
+      "score3": 0,
+      "reward_type": "Hint",
+      "actual_duration": 9,
+      "running": false,
+      "status": "In Progress",
+      "scores_saved": true,
+      "updated_at": 1792141489876,
+      "reward_cost_snapshot": 150,
+      "started_at": 1792141480207
+    },
+    "grp_1792141855519": {
+      "score1": 6,
+      "score2": 0,
+      "score3": 27,
+      "reward_type": "None",
+      "actual_duration": 3,
+      "running": false,
+      "status": "In Progress",
+      "scores_saved": true,
+      "updated_at": 1792141931946,
+      "reward_cost_snapshot": 0,
+      "started_at": 1792141928774
+    },
+    "grp_1792141982441": {
+      "score1": 0,
+      "score2": 0,
+      "score3": 0,
+      "reward_type": "None",
+      "actual_duration": 0,
+      "running": false,
+      "status": "Registered",
+      "reward_cost_snapshot": 0,
+      "updated_at": 1792142011198
+    },
+    "grp_1792142304720": {
+      "score1": 4,
+      "score2": 0,
+      "score3": 48,
+      "reward_type": "None",
+      "actual_duration": 1,
+      "running": false,
+      "status": "In Progress",
+      "scores_saved": true,
+      "updated_at": 1792142367325,
+      "reward_cost_snapshot": 0,
+      "started_at": 1792142365652
+    },
+    "grp_1792142635501": {
+      "score1": 0,
+      "score2": 0,
+      "score3": 0,
+      "reward_type": "None",
+      "actual_duration": 1,
+      "running": false,
+      "status": "In Progress",
+      "scores_saved": true,
+      "updated_at": 1792142651338,
+      "reward_cost_snapshot": 0,
+      "started_at": 1792142649721
+    },
+    "grp_1792143019932": {
+      "score1": 0,
+      "score2": 0,
+      "score3": 0,
+      "reward_type": "Hint",
+      "actual_duration": 1,
+      "running": false,
+      "status": "In Progress",
+      "reward_cost_snapshot": 150,
+      "updated_at": 1792143077097,
+      "scores_saved": true,
+      "started_at": 1792143075729
+    },
+    "grp_1792143135353": {
+      "score1": 6,
+      "score2": 300,
+      "score3": 0,
+      "reward_type": "Hint",
+      "actual_duration": 2,
+      "running": false,
+      "status": "In Progress",
+      "scores_saved": true,
+      "updated_at": 1792143185434,
+      "reward_cost_snapshot": 150,
+      "started_at": 1792143182883
+    },
+    "grp_1792145937722": {
+      "score1": 0,
+      "score2": 0,
+      "score3": 0,
+      "reward_type": "None",
+      "actual_duration": 1,
+      "running": false,
+      "status": "In Progress",
+      "reward_cost_snapshot": 0,
+      "updated_at": 1792145972100,
+      "scores_saved": true,
+      "started_at": 1792145970762
+    }
+  },
+  "settings": {
+    "mg1_name": "guess who",
+    "mg1_max": 10,
+    "mg2_name": "Rover game",
+    "mg2_max": 600,
+    "mg3_name": "Family feud",
+    "mg3_max": 50,
+    "extratime_cost": 250,
+    "hint_cost": 150,
+    "extratime_bonus": 60
+  }
+}

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EDC / IEEE Admin Console - 3 Eras & Leaderboard</title>
+  <title>EDC Admin Console - 3 Eras & Leaderboard</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -185,8 +185,25 @@
         return () => clearInterval(iv);
       }, []);
 
-      // Load persistent state
+      // Load persistent state & subscribe to real-time updates from server
       useEffect(() => {
+        const syncFromServer = (d) => {
+          if (!d) return;
+          if (Array.isArray(d.groups)) {
+            setGroups(d.groups);
+            try { localStorage.setItem('edc_event_groups', JSON.stringify(d.groups)); } catch(e){}
+          }
+          if (d.sessions && typeof d.sessions === 'object') {
+            setSessions(d.sessions);
+            try { localStorage.setItem('edc_event_sessions', JSON.stringify(d.sessions)); } catch(e){}
+          }
+          if (d.settings) {
+            setSettings({ ...DEFAULT_SETTINGS, ...d.settings });
+            try { localStorage.setItem('edc_event_settings', JSON.stringify(d.settings)); } catch(e){}
+          }
+        };
+
+        // First try local cache
         try {
           const localGroups = localStorage.getItem('edc_event_groups');
           const localSess = localStorage.getItem('edc_event_sessions');
@@ -194,26 +211,42 @@
           if (localGroups) setGroups(JSON.parse(localGroups));
           if (localSess) setSessions(JSON.parse(localSess));
           if (localSets) setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(localSets) });
+        } catch(e){}
 
-          if (localGroups || localSess) {
-            pushLive(
-              localGroups ? JSON.parse(localGroups) : [],
-              localSess ? JSON.parse(localSess) : {},
-              localSets ? { ...DEFAULT_SETTINGS, ...JSON.parse(localSets) } : DEFAULT_SETTINGS
-            );
-          } else {
-            fetch(SERVER + '/api/state').then(r => r.json()).then(d => {
-              setServerConnected(true);
-              if (d.groups && d.groups.length) {
-                setGroups(d.groups);
-                setSessions(d.sessions || {});
-                if (d.settings) setSettings({ ...DEFAULT_SETTINGS, ...d.settings });
-              }
-            }).catch(() => setServerConnected(false));
-          }
-        } catch (err) {
-          console.warn("Storage load error:", err);
-        }
+        // Then fetch latest server state
+        fetch(SERVER + '/api/state')
+          .then(r => r.json())
+          .then(d => {
+            setServerConnected(true);
+            syncFromServer(d);
+          })
+          .catch(() => setServerConnected(false));
+
+        // Connect to SSE stream for zero-latency multi-device sync
+        let es = null;
+        try {
+          es = new EventSource(SERVER + '/api/stream');
+          es.onmessage = (ev) => {
+            try {
+              const d = JSON.parse(ev.data);
+              syncFromServer(d);
+            } catch(e){}
+          };
+          es.onerror = () => { /* fallback to interval polling */ };
+        } catch(e){}
+
+        // Fallback polling every 2.5s
+        const iv = setInterval(() => {
+          fetch(SERVER + '/api/state')
+            .then(r => r.json())
+            .then(d => syncFromServer(d))
+            .catch(() => {});
+        }, 2500);
+
+        return () => {
+          if (es) es.close();
+          clearInterval(iv);
+        };
       }, []);
 
       const saveToStore = (newGroups, newSessions, newSettings) => {
@@ -323,7 +356,7 @@
           <aside className="w-64 bg-white border-r border-slate-200/80 flex flex-col justify-between select-none shadow-sm shrink-0">
             <div>
               <div className="p-6 border-b border-slate-100">
-                <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400">IEEE / EDC TECH EVENT</div>
+                <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400">EDC TECH EVENT</div>
                 <div className="text-lg font-black text-slate-900 mt-0.5 tracking-tight">
                   Control Console
                 </div>
@@ -430,16 +463,29 @@
               {activeTab === 'dashboard' && (
                 <DashboardSection 
                   groups={groups} 
+                  sessions={sessions}
                   totalMembersCount={totalMembersCount}
                   rankedCompletedGroups={rankedCompletedGroups}
-                  onRegisterGroup={(name, members) => {
+                  onRegisterGroup={(name, members, eventType) => {
                     const nextId = groups.length > 0 ? Math.max(...groups.map(g => g.game_id)) + 1 : 1001;
-                    const newGroup = { id: 'grp_' + Date.now(), game_id: nextId, group_name: name, status: 'Registered', members: members.map(m => ({ id: 'm_' + Math.random(), member_name: m })) };
+                    const newGroup = {
+                      id: 'grp_' + Date.now(),
+                      game_id: nextId,
+                      group_name: name,
+                      event_type: eventType || 'Blackout Protocol',
+                      status: 'Registered',
+                      members: members.map(m => ({ id: 'm_' + Math.random(), member_name: m }))
+                    };
                     saveToStore([newGroup, ...groups], sessions, settings);
-                    showToast(`Team "${name}" registered successfully!`);
+                    showToast(`Team "${name}" (${eventType || 'Blackout Protocol'}) registered!`);
                   }}
-                  onUpdateGroup={(id, name, members) => {
-                    const updated = groups.map(g => g.id === id ? { ...g, group_name: name, members: members.map(m => ({ id: m.id || 'm_' + Math.random(), member_name: m.member_name })) } : g);
+                  onUpdateGroup={(id, name, members, eventType) => {
+                    const updated = groups.map(g => g.id === id ? {
+                      ...g,
+                      group_name: name,
+                      event_type: eventType || g.event_type || 'Blackout Protocol',
+                      members: members.map(m => ({ id: m.id || 'm_' + Math.random(), member_name: m.member_name }))
+                    } : g);
                     saveToStore(updated, sessions, settings);
                     showToast("Team updated successfully!");
                   }}
@@ -451,6 +497,12 @@
                   }}
                   onStartGame={(id) => { setActiveGameId(id); setActiveTab('gamezone'); }}
                   onOpenDeductModal={(id) => { setDeductTargetId(id); setShowDeductModal(true); }}
+                  onSaveSession={(id, data) => {
+                    const newSess = { ...sessions, [id]: data };
+                    const updatedGroups = groups.map(g => g.id === id ? { ...g, status: data.status } : g);
+                    saveToStore(updatedGroups, newSess, settings);
+                  }}
+                  showToast={showToast}
                 />
               )}
 
@@ -666,11 +718,17 @@
     }
 
     // Dashboard Overview Section
-    function DashboardSection({ groups, totalMembersCount, rankedCompletedGroups, onRegisterGroup, onUpdateGroup, onDeleteGroup, onStartGame, onOpenDeductModal }) {
+    function DashboardSection({ groups, sessions, totalMembersCount, rankedCompletedGroups, onRegisterGroup, onUpdateGroup, onDeleteGroup, onStartGame, onOpenDeductModal, onSaveSession, showToast }) {
       const [groupName, setGroupName] = useState('');
+      const [eventType, setEventType] = useState('Blackout Protocol');
       const [members, setMembers] = useState(['', '', '']);
       const [editingId, setEditingId] = useState(null);
       const [search, setSearch] = useState('');
+
+      // Direct Time Entry Modal State for Dashboard
+      const [directTimeTeam, setDirectTimeTeam] = useState(null);
+      const [directMinutes, setDirectMinutes] = useState('');
+      const [directSeconds, setDirectSeconds] = useState('');
 
       const handleAddMember = () => setMembers([...members, '']);
       const handleMemberChange = (i, val) => { const updated = [...members]; updated[i] = val; setMembers(updated); };
@@ -682,21 +740,120 @@
         const validMembers = members.map(m => m.trim()).filter(Boolean);
         if (validMembers.length < 3) { alert("Please provide at least 3 valid members."); return; }
         if (editingId) {
-          onUpdateGroup(editingId, groupName, validMembers);
+          onUpdateGroup(editingId, groupName, validMembers, eventType);
           setEditingId(null);
         } else {
-          onRegisterGroup(groupName, validMembers);
+          onRegisterGroup(groupName, validMembers, eventType);
         }
-        setGroupName(''); setMembers(['', '', '']);
+        setGroupName(''); setMembers(['', '', '']); setEventType('Blackout Protocol');
       };
 
-      const filtered = groups.filter(g => g.group_name.toLowerCase().includes(search.toLowerCase()) || g.game_id.toString().includes(search));
+      const handleOpenDirectTime = (team) => {
+        setDirectTimeTeam(team);
+        const currSess = sessions[team.id] || {};
+        const currDur = currSess.actual_duration || 0;
+        setDirectMinutes(currDur > 0 ? Math.floor(currDur / 60).toString() : '');
+        setDirectSeconds(currDur > 0 ? (currDur % 60).toString() : '');
+      };
+
+      const handleSaveDirectTime = (e) => {
+        e.preventDefault();
+        if (!directTimeTeam) return;
+        const mins = parseInt(directMinutes || '0', 10);
+        const secs = parseInt(directSeconds || '0', 10);
+        const total = mins * 60 + secs;
+        if (total <= 0) {
+          alert("Please enter a valid time taken (> 0 seconds).");
+          return;
+        }
+        const currSess = sessions[directTimeTeam.id] || {};
+        onSaveSession(directTimeTeam.id, {
+          ...currSess,
+          running: false,
+          paused: false,
+          actual_duration: total,
+          is_manual_time: true,
+          status: 'Completed'
+        });
+        showToast(`Saved ${formatTime(total)} for "${directTimeTeam.group_name}"! Team marked Completed.`);
+        setDirectTimeTeam(null);
+      };
+
+      const filtered = groups.filter(g => g.group_name.toLowerCase().includes(search.toLowerCase()) || g.game_id.toString().includes(search) || (g.event_type && g.event_type.toLowerCase().includes(search.toLowerCase())));
 
       return (
         <div className="flex-1 p-8 space-y-8 max-w-7xl mx-auto w-full">
+          {/* Quick Direct Time Entry Modal */}
+          {directTimeTeam && (
+            <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl space-y-5">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                  <div className="flex items-center gap-2 text-indigo-600 font-black text-lg">
+                    <FlagIcon />
+                    <span>Direct Time Taken Entry</span>
+                  </div>
+                  <button onClick={() => setDirectTimeTeam(null)} className="text-slate-400 hover:text-slate-700 font-bold text-sm">✕</button>
+                </div>
+
+                <div className="p-3 bg-indigo-50/60 rounded-2xl border border-indigo-100 text-xs text-indigo-950">
+                  Directly record the total time taken for <strong>{directTimeTeam.group_name}</strong> (Game ID #{directTimeTeam.game_id}) without starting a stopwatch. This immediately marks the team as Completed on the leaderboard.
+                </div>
+
+                <form onSubmit={handleSaveDirectTime} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Minutes (MM) *</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="180"
+                        placeholder="e.g. 12"
+                        value={directMinutes}
+                        onChange={(e) => setDirectMinutes(e.target.value)}
+                        className="w-full px-3.5 py-2.5 text-base font-bold border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:border-indigo-600 font-mono"
+                        required
+                        autoFocus
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Seconds (SS) *</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="59"
+                        placeholder="e.g. 35"
+                        value={directSeconds}
+                        onChange={(e) => setDirectSeconds(e.target.value)}
+                        className="w-full px-3.5 py-2.5 text-base font-bold border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:border-indigo-600 font-mono"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-2 flex items-center gap-3">
+                    <button
+                      type="submit"
+                      className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-emerald-100 transition-all flex items-center justify-center gap-2"
+                    >
+                      <CheckCircle2Icon />
+                      <span>Confirm &amp; Complete Team</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDirectTimeTeam(null)}
+                      className="px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-sm rounded-xl"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
           <div>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">Dashboard Overview</h1>
-            <p className="text-sm text-slate-500 mt-1">Manage team registrations and review high-level event statistics.</p>
+            <p className="text-sm text-slate-500 mt-1">Manage team registrations, enter time taken directly, and review high-level event statistics.</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -729,6 +886,7 @@
                         </span>
                         <div>
                           <span className="font-bold text-sm text-slate-900 block">{g.group_name}</span>
+                          <span className="text-[10px] text-indigo-600 font-bold block">{g.event_type || 'Blackout Protocol'}</span>
                           <span className="text-xs font-mono text-emerald-600 font-semibold">
                             {formatTime(g.res.adjustedDuration)} ({g.res.netPts} Pts)
                           </span>
@@ -746,9 +904,23 @@
                 <UsersIcon /> {editingId ? 'Edit Team Details' : 'Register New Team'}
               </h3>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Team Name *</label>
-                  <input type="text" placeholder="e.g. Challengers" value={groupName} onChange={(e) => setGroupName(e.target.value)} className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-600 bg-slate-50 font-bold" required />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Team Name *</label>
+                    <input type="text" placeholder="e.g. Challengers" value={groupName} onChange={(e) => setGroupName(e.target.value)} className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-600 bg-slate-50 font-bold" required />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Event Type *</label>
+                    <select
+                      value={eventType}
+                      onChange={(e) => setEventType(e.target.value)}
+                      className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-600 bg-slate-50 font-bold text-indigo-900"
+                      required
+                    >
+                      <option value="Blackout Protocol">Blackout Protocol (Main Challenge)</option>
+                      <option value="Mini Games">Mini Games</option>
+                    </select>
+                  </div>
                 </div>
 
                 <div>
@@ -777,7 +949,7 @@
                     {editingId ? 'Update Team' : 'Register Team'}
                   </button>
                   {editingId && (
-                    <button type="button" onClick={() => { setEditingId(null); setGroupName(''); setMembers(['', '', '']); }} className="px-5 py-2.5 bg-slate-100 text-slate-600 text-sm font-bold rounded-xl hover:bg-slate-200">
+                    <button type="button" onClick={() => { setEditingId(null); setGroupName(''); setMembers(['', '', '']); setEventType('Blackout Protocol'); }} className="px-5 py-2.5 bg-slate-100 text-slate-600 text-sm font-bold rounded-xl hover:bg-slate-200">
                       Cancel
                     </button>
                   )}
@@ -791,7 +963,7 @@
               <h3 className="text-base font-bold text-slate-900">Registered Teams</h3>
               <div className="relative">
                 <div className="absolute left-3 top-3 text-slate-400"><SearchIcon /></div>
-                <input type="text" placeholder="Search team or ID..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-600 w-64 bg-slate-50" />
+                <input type="text" placeholder="Search team, ID, or event..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-600 w-64 bg-slate-50" />
               </div>
             </div>
 
@@ -804,30 +976,65 @@
                     <tr className="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-400 uppercase">
                       <th className="p-4">Game ID</th>
                       <th className="p-4">Team Name</th>
+                      <th className="p-4">Event Type</th>
                       <th className="p-4">Members</th>
+                      <th className="p-4">Time Taken</th>
                       <th className="p-4">Status</th>
                       <th className="p-4 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-sm">
-                    {filtered.map(g => (
-                      <tr key={g.id} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="p-4 font-black text-indigo-600">#{g.game_id}</td>
-                        <td className="p-4 font-bold text-slate-900">{g.group_name}</td>
-                        <td className="p-4 text-slate-500 text-xs max-w-xs truncate">{g.members.map(m => m.member_name).join(', ')}</td>
-                        <td className="p-4">
-                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${g.status === 'Completed' ? 'bg-emerald-50 text-emerald-700' : g.status === 'In Progress' ? 'bg-amber-50 text-amber-700' : 'bg-slate-100 text-slate-600'}`}>
-                            {g.status || 'Registered'}
-                          </span>
-                        </td>
-                        <td className="p-4 text-right space-x-2">
-                          <button onClick={() => onStartGame(g.id)} className="px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 text-xs font-bold">Manage 3 Eras</button>
-                          <button onClick={() => onOpenDeductModal(g.id)} className="px-2.5 py-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 text-xs font-bold" title="Deduct points">Penalty</button>
-                          <button onClick={() => { setEditingId(g.id); setGroupName(g.group_name); setMembers(g.members.map(m => m.member_name)); }} className="p-1.5 text-slate-500 hover:bg-slate-100 rounded-lg"><Edit3Icon /></button>
-                          <button onClick={() => { if (confirm(`Delete team "${g.group_name}"?`)) onDeleteGroup(g.id); }} className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg"><Trash2Icon /></button>
-                        </td>
-                      </tr>
-                    ))}
+                    {filtered.map(g => {
+                      const sess = sessions[g.id] || {};
+                      const hasTime = sess.actual_duration > 0;
+                      return (
+                        <tr key={g.id} className="hover:bg-slate-50/50 transition-colors">
+                          <td className="p-4 font-black text-indigo-600">#{g.game_id}</td>
+                          <td className="p-4 font-bold text-slate-900">{g.group_name}</td>
+                          <td className="p-4">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold ${g.event_type === 'Mini Games' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-indigo-50 text-indigo-700 border border-indigo-200'}`}>
+                              {g.event_type || 'Blackout Protocol'}
+                            </span>
+                          </td>
+                          <td className="p-4 text-slate-500 text-xs max-w-xs truncate">{g.members ? g.members.map(m => m.member_name).filter(Boolean).join(', ') : ''}</td>
+                          <td className="p-4">
+                            {hasTime ? (
+                              <span className="font-mono font-bold text-emerald-600 text-xs bg-emerald-50 px-2 py-1 rounded border border-emerald-200">
+                                {formatTime(sess.actual_duration)} {sess.is_manual_time ? '(Direct)' : '(Timer)'}
+                              </span>
+                            ) : (
+                              <span className="text-slate-400 text-xs font-mono">--:--</span>
+                            )}
+                          </td>
+                          <td className="p-4">
+                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${g.status === 'Completed' || sess.status === 'Completed' ? 'bg-emerald-50 text-emerald-700' : g.status === 'In Progress' || sess.running ? 'bg-amber-50 text-amber-700' : 'bg-slate-100 text-slate-600'}`}>
+                              {g.status === 'Completed' || sess.status === 'Completed' ? 'Completed' : (g.status || 'Registered')}
+                            </span>
+                          </td>
+                          <td className="p-4 text-right space-x-1.5 whitespace-nowrap">
+                            <button
+                              onClick={() => handleOpenDirectTime(g)}
+                              className="px-3 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 rounded-lg text-xs font-extrabold shadow-sm transition-all"
+                              title="Directly enter total time taken without stopwatch"
+                            >
+                              ⚡ Direct Time
+                            </button>
+                            <button onClick={() => onStartGame(g.id)} className="px-2.5 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 text-xs font-bold">Stopwatch</button>
+                            <button onClick={() => onOpenDeductModal(g.id)} className="px-2 py-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 text-xs font-bold" title="Deduct points">Penalty</button>
+                            <button onClick={() => { setEditingId(g.id); setGroupName(g.group_name); setEventType(g.event_type || 'Blackout Protocol'); setMembers(g.members ? g.members.map(m => m.member_name) : ['', '', '']); }} className="p-1.5 text-slate-500 hover:bg-slate-100 rounded-lg"><Edit3Icon /></button>
+                            <button onClick={() => { if (confirm(`Delete team "${g.group_name}"?`)) onDeleteGroup(g.id); }} className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg"><Trash2Icon /></button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
                   </tbody>
                 </table>
               </div>
@@ -1087,19 +1294,127 @@
         showToast("Stopwatches reset.");
       };
 
+      // State for manual time modal
+      const [showManualTimeModal, setShowManualTimeModal] = useState(false);
+      const [manualMinutes, setManualMinutes] = useState('');
+      const [manualSeconds, setManualSeconds] = useState('');
+
+      const handleSaveManualTime = (e) => {
+        e.preventDefault();
+        const mins = parseInt(manualMinutes || '0', 10);
+        const secs = parseInt(manualSeconds || '0', 10);
+        const totalSecs = mins * 60 + secs;
+        if (totalSecs <= 0) {
+          alert("Please enter a valid time greater than 0 seconds.");
+          return;
+        }
+        onSaveSession(selectedGroup.id, {
+          ...session,
+          running: false,
+          paused: false,
+          actual_duration: totalSecs,
+          is_manual_time: true,
+          status: 'Completed'
+        });
+        setShowManualTimeModal(false);
+        setManualMinutes('');
+        setManualSeconds('');
+        showToast(`Manual total time saved: ${formatTime(totalSecs)}! Team marked as Completed.`);
+      };
+
       return (
         <div className="flex-1 p-8 space-y-8 max-w-7xl mx-auto w-full">
+          {/* Manual Time Entry Modal */}
+          {showManualTimeModal && (
+            <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl space-y-6">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                  <div className="flex items-center gap-2 text-indigo-600 font-black text-lg">
+                    <FlagIcon />
+                    <span>Enter Total Time Manually</span>
+                  </div>
+                  <button onClick={() => setShowManualTimeModal(false)} className="text-slate-400 hover:text-slate-700 font-bold text-sm">✕</button>
+                </div>
+
+                <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 text-xs text-slate-600">
+                  Setting the total time manually overrides the stopwatch for <strong>{selectedGroup.group_name}</strong> and instantly updates their standing on the leaderboard.
+                </div>
+
+                <form onSubmit={handleSaveManualTime} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Minutes (MM) *</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="180"
+                        placeholder="e.g. 14"
+                        value={manualMinutes}
+                        onChange={(e) => setManualMinutes(e.target.value)}
+                        className="w-full px-3.5 py-2.5 text-base font-bold border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:border-indigo-600 font-mono"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Seconds (SS) *</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="59"
+                        placeholder="e.g. 45"
+                        value={manualSeconds}
+                        onChange={(e) => setManualSeconds(e.target.value)}
+                        className="w-full px-3.5 py-2.5 text-base font-bold border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:border-indigo-600 font-mono"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-2 flex items-center gap-3">
+                    <button
+                      type="submit"
+                      className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-indigo-100 transition-all"
+                    >
+                      Save Total Time
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowManualTimeModal(false)}
+                      className="px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-sm rounded-xl"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
           {/* Header & Team Switcher */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <h1 className="text-2xl font-black text-slate-900 tracking-tight">GameZone: 3 Eras Control</h1>
-              <p className="text-sm text-slate-500 mt-1">Manage continuous stopwatch laps across the 3 eras and record scores.</p>
+              <p className="text-sm text-slate-500 mt-1">Manage continuous stopwatch laps across the 3 eras, enter manual times, and record scores.</p>
             </div>
-            <div className="flex items-center gap-3 bg-white p-2 rounded-2xl border border-slate-200 shadow-sm">
-              <span className="text-xs font-bold text-slate-400 uppercase pl-2">Active Team:</span>
-              <select value={activeGameId || ''} onChange={(e) => setActiveGameId(e.target.value)} className="px-3 py-1.5 text-sm font-bold border border-slate-200 rounded-xl bg-slate-50 text-slate-900 focus:outline-none">
-                {groups.map(g => <option key={g.id} value={g.id}>#{g.game_id} - {g.group_name}</option>)}
-              </select>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => {
+                  const currSecs = session.actual_duration || 0;
+                  setManualMinutes(Math.floor(currSecs / 60).toString());
+                  setManualSeconds((currSecs % 60).toString());
+                  setShowManualTimeModal(true);
+                }}
+                className="px-4 py-2.5 bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 font-extrabold text-xs rounded-xl shadow-sm flex items-center gap-2 transition-all"
+              >
+                <FlagIcon />
+                <span>Enter Total Time Manually</span>
+              </button>
+              <div className="flex items-center gap-2 bg-white p-2 rounded-2xl border border-slate-200 shadow-sm">
+                <span className="text-xs font-bold text-slate-400 uppercase pl-2">Active:</span>
+                <select value={activeGameId || ''} onChange={(e) => setActiveGameId(e.target.value)} className="px-3 py-1.5 text-sm font-bold border border-slate-200 rounded-xl bg-slate-50 text-slate-900 focus:outline-none">
+                  {groups.map(g => <option key={g.id} value={g.id}>#{g.game_id} - {g.group_name} ({g.event_type || 'Blackout'})</option>)}
+                </select>
+              </div>
             </div>
           </div>
 
@@ -1108,6 +1423,9 @@
             <div>
               <div className="flex items-center gap-2">
                 <span className="px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-600">Game ID #{selectedGroup.game_id}</span>
+                <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${selectedGroup.event_type === 'Mini Games' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-indigo-50 text-indigo-700 border border-indigo-200'}`}>
+                  {selectedGroup.event_type || 'Blackout Protocol'}
+                </span>
                 <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
                   session?.status === 'Completed' ? 'bg-emerald-50 text-emerald-700' :
                   session?.running ? 'bg-amber-50 text-amber-700' : 'bg-slate-100 text-slate-600'
@@ -1117,6 +1435,12 @@
               </div>
               <h2 className="text-2xl font-black text-slate-900 mt-2">{selectedGroup.group_name}</h2>
               <p className="text-xs text-slate-500 mt-1">Members: {selectedGroup.members.map(m => m.member_name).join(', ')}</p>
+              {session?.actual_duration > 0 && (
+                <div className="mt-2 text-xs font-bold text-emerald-600 flex items-center gap-1.5">
+                  <CheckCircle2Icon />
+                  <span>Recorded Total Time: <span className="font-mono text-sm">{formatTime(session.actual_duration)}</span> {session.is_manual_time ? '(Manual Entry)' : '(Stopwatch)'}</span>
+                </div>
+              )}
             </div>
 
             {/* Score & Penalty Ledger */}
@@ -1469,6 +1793,7 @@
                       <th className="p-4 text-center">Rank</th>
                       <th className="p-4">Game ID</th>
                       <th className="p-4">Team Details</th>
+                      <th className="p-4">Event Type</th>
                       <th className="p-4 text-center">Era 1</th>
                       <th className="p-4 text-center">Era 2</th>
                       <th className="p-4 text-center">Era 3</th>
@@ -1495,10 +1820,18 @@
                           <div className="font-extrabold text-slate-900">{g.group_name}</div>
                           <div className="text-xs text-slate-400 max-w-xs truncate">{g.members.map(m => m.member_name).join(', ')}</div>
                         </td>
+                        <td className="p-4">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${g.event_type === 'Mini Games' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-indigo-50 text-indigo-700 border border-indigo-200'}`}>
+                            {g.event_type || 'Blackout Protocol'}
+                          </span>
+                        </td>
                         <td className="p-4 text-center font-mono text-xs">{formatTime(g.res.era1Time)}</td>
                         <td className="p-4 text-center font-mono text-xs">{formatTime(g.res.era2Time)}</td>
                         <td className="p-4 text-center font-mono text-xs">{formatTime(g.res.era3Time)}</td>
-                        <td className="p-4 text-center font-mono text-xs text-slate-600">{formatTime(g.res.actualDuration)}</td>
+                        <td className="p-4 text-center font-mono text-xs text-slate-600">
+                          {formatTime(g.res.actualDuration)}
+                          {g.session?.is_manual_time && <span className="block text-[9px] text-indigo-600 font-bold">Manual</span>}
+                        </td>
                         <td className="p-4 text-center font-mono text-sm font-black text-emerald-600">
                           {formatTime(g.res.adjustedDuration)}
                           {g.res.bonus > 0 && <span className="text-[10px] text-amber-600 block">(-{g.res.bonus}s bonus)</span>}

@@ -50,18 +50,50 @@ http.createServer((req, res) => {
   if (url === '/api/state' && req.method === 'GET')
     return send(200, 'application/json', JSON.stringify({ ...state, now: Date.now() }));
 
-  // Only the laptop running the server (the admin) may write.
+  // Update state endpoint with merge strategy and SSE broadcast
   if (url === '/api/state' && req.method === 'POST') {
-    if (!isLocal(req)) return send(403, 'text/plain', 'Admin only');
     let body = '';
     req.on('data', c => { body += c; if (body.length > 5e6) req.destroy(); });
     req.on('end', () => {
       try {
         const d = JSON.parse(body);
-        state = { groups: d.groups || [], sessions: d.sessions || {}, settings: d.settings || {}, updated: Date.now() };
+        
+        // Merge incoming groups (by id)
+        const currentGroups = state.groups || [];
+        const incomingGroups = Array.isArray(d.groups) ? d.groups : [];
+        const groupMap = new Map();
+        currentGroups.forEach(g => { if (g && g.id) groupMap.set(g.id, g); });
+        incomingGroups.forEach(g => {
+          if (g && g.id) {
+            const existing = groupMap.get(g.id);
+            groupMap.set(g.id, existing ? { ...existing, ...g } : g);
+          }
+        });
+        const mergedGroups = Array.from(groupMap.values());
+
+        // Merge incoming sessions (by group id)
+        const currentSessions = state.sessions || {};
+        const incomingSessions = (d.sessions && typeof d.sessions === 'object') ? d.sessions : {};
+        const mergedSessions = { ...currentSessions };
+        for (const [gid, s] of Object.entries(incomingSessions)) {
+          mergedSessions[gid] = { ...(currentSessions[gid] || {}), ...s };
+        }
+
+        // Merge settings
+        const mergedSettings = { ...(state.settings || {}), ...(d.settings || {}) };
+
+        state = {
+          groups: mergedGroups,
+          sessions: mergedSessions,
+          settings: mergedSettings,
+          updated: Date.now()
+        };
+
         fs.writeFile(DB, JSON.stringify(state, null, 2), () => {});
-        send(200, 'application/json', '{"ok":true}');
-      } catch (e) { send(400, 'text/plain', 'Bad JSON'); }
+        send(200, 'application/json', JSON.stringify({ ok: true, state }));
+      } catch (e) {
+        send(400, 'text/plain', 'Bad JSON');
+      }
     });
     return;
   }
@@ -85,13 +117,13 @@ http.createServer((req, res) => {
     return;
   }
   if (url === '/api/info') return send(200, 'application/json', JSON.stringify({ urls: lanUrls() }));
-  if (url === '/admin' || url === '/admin.html') return isLocal(req) ? sendFile('admin.html') : send(403, 'text/plain', 'Admin only');
-  if (url === '/panel' || url === '/AdministratorPanel.html') return isLocal(req) ? sendFile('AdministratorPanel.html') : send(403, 'text/plain', 'Admin only');
+  if (url === '/admin' || url === '/admin.html') return sendFile('admin.html');
+  if (url === '/panel' || url === '/AdministratorPanel.html') return sendFile('AdministratorPanel.html');
   if (url === '/' || url === '/index.html' || url === '/leaderboard' || url === '/leaderboard.html') return sendFile('leaderboard.html');
   send(404, 'text/plain', 'Not found');
 }).listen(PORT, '0.0.0.0', () => {
   console.log('\n======================================================');
-  console.log(' EDC / IEEE Live Event Server Running');
+  console.log(' EDC Live Event Server Running');
   console.log(' Admin panel : http://localhost:' + PORT + '/admin');
   console.log(' Leaderboard : http://localhost:' + PORT + '/');
   console.log(' LAN Players : ' + (lanUrls().join('  |  ') || 'connect to Wi-Fi first'));

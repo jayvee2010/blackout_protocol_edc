@@ -1,11 +1,14 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/", "destination": "/leaderboard.html" },
-    { "source": "/leaderboard", "destination": "/leaderboard.html" },
+    { "source": "/api/health", "destination": "/api/health.js" },
+    { "source": "/api/state", "destination": "/api/state.js" },
     { "source": "/admin", "destination": "/admin.html" },
     { "source": "/panel", "destination": "/AdministratorPanel.html" },
+    { "source": "/leaderboard", "destination": "/leaderboard.html" },
     { "source": "/logo.jpeg", "destination": "/logo.jpeg" },
-    { "source": "/edc-logo.jpg", "destination": "/edc-logo.jpg" }
+    { "source": "/logo.jpg", "destination": "/logo.jpeg" },
+    { "source": "/edc-logo.jpg", "destination": "/edc-logo.jpg" },
+    { "source": "/", "destination": "/leaderboard.html" }
   ]
 }
