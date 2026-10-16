@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BLACKOUT PROTOCOL // LIVE CLASSIFIED LEADERBOARD</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- React & React DOM CDNs -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  
+  <!-- Babel Standalone to compile JSX in browser -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800;900&family=JetBrains+Mono:wght@400;600;700;800&family=Inter:wght@400;600;700;800;900&display=swap');
+    
+    :root {
+      --glow-gold: 0 0 25px rgba(250, 204, 21, 0.45);
+      --glow-cyan: 0 0 25px rgba(6, 182, 212, 0.45);
+      --glow-purple: 0 0 25px rgba(168, 85, 247, 0.45);
+      --glow-red: 0 0 25px rgba(239, 68, 68, 0.45);
+    }
+
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      background-color: #030712;
+      color: #F3F4F6;
+      overflow-x: hidden;
+    }
+
+    .font-orbitron {
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    /* Radar scanline animation */
+    .scanline {
+      background: linear-gradient(
+        to bottom,
+        rgba(255,255,255,0),
+        rgba(255,255,255,0) 50%,
+        rgba(6, 182, 212, 0.12) 50%,
+        rgba(6, 182, 212, 0.04)
+      );
+      background-size: 100% 4px;
+      pointer-events: none;
+    }
+
+    .cyber-grid {
+      background-image: 
+        linear-gradient(to right, rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
+      background-size: 36px 36px;
+    }
+
+    /* CRT Vignette */
+    .vignette {
+      box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.85);
+    }
+  </style>
+</head>
+<body class="bg-[#030712] text-slate-100 antialiased selection:bg-cyan-500 selection:text-black min-h-screen relative cyber-grid">
+  <div class="fixed inset-0 scanline z-40 pointer-events-none opacity-40"></div>
+  <div class="fixed inset-0 vignette z-30 pointer-events-none"></div>
+
+  <div id="root" class="relative z-20"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const SERVER = (location.protocol.startsWith('http') && (location.port === '3000' || !location.port))
+      ? (location.origin === 'null' ? 'http://localhost:3000' : location.origin)
+      : 'http://localhost:3000';
+
+    const formatTime = (s) => {
+      const sec = Math.max(0, Math.floor(Number(s) || 0));
+      const m = Math.floor(sec / 60).toString().padStart(2, '0');
+      const rem = (sec % 60).toString().padStart(2, '0');
+      return `${m}:${rem}`;
+    };
+
+    function computeTeamResults(g, session, settings = {}) {
+      const ss = session || {};
+      const earned = (Number(ss.score1) || 0) + (Number(ss.score2) || 0) + (Number(ss.score3) || 0);
+      const cost = ss.reward_cost_snapshot !== undefined ? Number(ss.reward_cost_snapshot)
+        : (ss.reward_type === 'Extra Time' ? Number(settings.extratime_cost || 100) : ss.reward_type === 'Hint' ? Number(settings.hint_cost || 50) : 0);
+      
+      const deductions = Array.isArray(ss.deductions) ? ss.deductions : [];
+      const totalDeductions = deductions.reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
+      const netPoints = Math.max(0, earned - cost - totalDeductions);
+      
+      const era1Time = Number(ss.era1_duration) || 0;
+      const era2Time = Number(ss.era2_duration) || 0;
+      const era3Time = Number(ss.era3_duration) || 0;
+      const actualDuration = Number(ss.actual_duration) || (era1Time + era2Time + era3Time);
+      
+      const bonus = ss.reward_type === 'Extra Time' ? Number(settings.extratime_bonus || 60) : 0;
+      const adjustedDuration = Math.max(0, actualDuration - bonus);
+
+      return {
+        earned,
+        cost,
+        deductions,
+        totalDeductions,
+        netPoints,
+        era1Time,
+        era2Time,
+        era3Time,
+        actualDuration,
+        bonus,
+        adjustedDuration,
+        rewardType: ss.reward_type || 'None'
+      };
+    }
+
+    function LeaderboardApp() {
+      const [state, setState] = useState({ groups: [], sessions: {}, settings: {} });
+      const [loading, setLoading] = useState(true);
+      const [lastSync, setLastSync] = useState(Date.now());
+      const [search, setSearch] = useState('');
+
+      const fetchState = () => {
+        fetch(SERVER + '/api/state')
+          .then(res => res.json())
+          .then(data => {
+            setState({
+              groups: data.groups || [],
+              sessions: data.sessions || {},
+              settings: data.settings || {}
+            });
+            setLastSync(Date.now());
+            setLoading(false);
+          })
+          .catch(() => {
+            // Fallback to local storage if running standalone
+            try {
+              const localGroups = localStorage.getItem('edc_event_groups');
+              const localSess = localStorage.getItem('edc_event_sessions');
+              const localSets = localStorage.getItem('edc_event_settings');
+              setState({
+                groups: localGroups ? JSON.parse(localGroups) : [],
+                sessions: localSess ? JSON.parse(localSess) : {},
+                settings: localSets ? JSON.parse(localSets) : {}
+              });
+            } catch(e) {}
+            setLoading(false);
+          });
+      };
+
+      useEffect(() => {
+        fetchState();
+        const iv = setInterval(fetchState, 2000); // 2 second live telemetry poll
+        return () => clearInterval(iv);
+      }, []);
+
+      const groups = state.groups || [];
+      const sessions = state.sessions || {};
+      const settings = state.settings || {};
+
+      // Process completed and active groups
+      const completedList = groups.filter(g => sessions[g.id]?.status === 'Completed').map(g => {
+        const res = computeTeamResults(g, sessions[g.id], settings);
+        return { ...g, session: sessions[g.id], res };
+      });
+
+      completedList.sort((a, b) => {
+        if (a.res.adjustedDuration !== b.res.adjustedDuration) {
+          return a.res.adjustedDuration - b.res.adjustedDuration;
+        }
+        return b.res.netPoints - a.res.netPoints;
+      });
+
+      let currentRank = 1;
+      const ranked = completedList.map((g, idx, arr) => {
+        if (idx > 0 && (g.res.adjustedDuration !== arr[idx - 1].res.adjustedDuration || g.res.netPoints !== arr[idx - 1].res.netPoints)) {
+          currentRank = idx + 1;
+        }
+        return { ...g, officialRank: currentRank };
+      });
+
+      const activeList = groups.filter(g => sessions[g.id]?.status === 'In Progress');
+
+      const filtered = ranked.filter(g => 
+        g.group_name.toLowerCase().includes(search.toLowerCase()) || 
+        g.game_id.toString().includes(search)
+      );
+
+      return (
+        <div className="max-w-[1600px] mx-auto p-4 md:p-8 space-y-8 pb-20">
+          
+          {/* ======================================================== */}
+          {/* BLACKOUT PROTOCOL CLASSIFIED HERO HEADER WITH EDC LOGO   */}
+          {/* ======================================================== */}
+          <header className="relative bg-[#070d1e]/90 border-2 border-cyan-500/60 rounded-3xl p-6 md:p-8 shadow-[0_0_60px_rgba(6,182,212,0.25)] backdrop-blur-xl overflow-hidden">
+            {/* Top decorative hazard stripes */}
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-cyan-400 to-rose-500"></div>
+
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-6 relative z-10">
+              
+              {/* EDC Logo & Department Identity */}
+              <div className="flex items-center gap-5">
+                <div className="relative group">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 to-amber-500 rounded-full blur-md opacity-75 group-hover:opacity-100 transition duration-500"></div>
+                  <img 
+                    src="/edc-logo.jpg" 
+                    alt="EDC Logo" 
+                    className="relative w-20 h-20 md:w-24 md:h-24 rounded-full border-2 border-cyan-400 bg-black p-1 object-cover shadow-[0_0_20px_rgba(6,182,212,0.8)]"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = 'edc-logo.jpg';
+                    }}
+                  />
+                  <span className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-emerald-400 border-2 border-black animate-pulse" title="System Live"></span>
+                </div>
+
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-0.5 rounded bg-cyan-950/90 border border-cyan-400 text-cyan-300 font-black text-[10px] tracking-[0.25em] uppercase">
+                      BLACKOUT PROTOCOL // LEVEL-1 ACTIVE
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-amber-950/80 border border-amber-500 text-amber-300 font-bold text-[10px] tracking-wider uppercase">
+                      ELECTRONIC DESIGN CLUB • SIT PUNE
+                    </span>
+                  </div>
+
+                  <h1 className="text-2xl md:text-5xl font-black font-orbitron tracking-[0.15em] text-white mt-2 drop-shadow-[0_0_25px_rgba(255,255,255,0.7)]">
+                    OPERATION BLACKOUT
+                  </h1>
+                  <p className="text-xs md:text-sm text-cyan-300 mt-1 font-mono tracking-wider flex items-center gap-2">
+                    <span>3 ERAS CHRONO-TELEMETRY &amp; LIVE OPERATIVE STANDINGS</span>
+                    <span className="text-slate-500">|</span>
+                    <span className="text-emerald-400">STATUS: BROADCASTING</span>
+                  </p>
+                </div>
+              </div>
+
+              {/* Status Telemetry Ticker */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 w-full lg:w-auto text-center font-mono">
+                <div className="bg-black/60 border border-cyan-500/40 p-3 rounded-2xl shadow-inner">
+                  <div className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">OPERATIVES</div>
+                  <div className="text-2xl md:text-3xl font-black font-orbitron text-cyan-400 mt-0.5">{groups.length}</div>
+                </div>
+
+                <div className="bg-black/60 border border-emerald-500/40 p-3 rounded-2xl shadow-inner">
+                  <div className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">RECOVERED</div>
+                  <div className="text-2xl md:text-3xl font-black font-orbitron text-emerald-400 mt-0.5">{ranked.length}</div>
+                </div>
+
+                <div className="bg-black/60 border border-purple-500/40 p-3 rounded-2xl shadow-inner col-span-2 sm:col-span-1">
+                  <div className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">IN THE FIELD</div>
+                  <div className="text-2xl md:text-3xl font-black font-orbitron text-purple-400 mt-0.5">{activeList.length}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* 3 ERAS PROTOCOL HUD BANNER */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-6 pt-5 border-t border-cyan-500/30 text-xs">
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-amber-950/30 border border-amber-500/40">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-400 flex items-center justify-center font-orbitron font-black text-amber-400 text-sm">
+                  E1
+                </div>
+                <div>
+                  <div className="font-bold text-amber-300 tracking-wider">ERA 1: RETRO / ANCIENT</div>
+                  <div className="text-[11px] text-gray-400">Mechanical Relays &amp; Analog Circuits</div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-cyan-950/30 border border-cyan-500/40">
+                <div className="w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-400 flex items-center justify-center font-orbitron font-black text-cyan-400 text-sm">
+                  E2
+                </div>
+                <div>
+                  <div className="font-bold text-cyan-300 tracking-wider">ERA 2: INDUSTRIAL / MODERN</div>
+                  <div className="text-[11px] text-gray-400">Microcontrollers &amp; Avionics Telemetry</div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-purple-950/30 border border-purple-500/40">
+                <div className="w-8 h-8 rounded-lg bg-purple-500/20 border border-purple-400 flex items-center justify-center font-orbitron font-black text-purple-400 text-sm">
+                  E3
+                </div>
+                <div>
+                  <div className="font-bold text-purple-300 tracking-wider">ERA 3: CYBER / FUTURE</div>
+                  <div className="text-[11px] text-gray-400">Black Box Quantum Lock &amp; AI Decryption</div>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          {/* ======================================================== */}
+          {/* SEARCH & FILTERS CONTROLS                                */}
+          {/* ======================================================== */}
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-[#0a1124]/90 p-4 rounded-2xl border border-cyan-500/40 shadow-lg">
+            <div className="flex items-center gap-3">
+              <span className="w-3 h-3 rounded-full bg-cyan-400 animate-ping"></span>
+              <span className="text-xs md:text-sm font-bold tracking-widest text-white uppercase font-orbitron">
+                CHRONO-RANKINGS // FASTEST ADJUSTED TIME WINS
+              </span>
+            </div>
+
+            <div className="relative w-full sm:w-80">
+              <input
+                type="text"
+                placeholder="Search team name or ID..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full bg-black/80 border border-cyan-500/50 rounded-xl px-4 py-2.5 text-xs text-cyan-200 placeholder-gray-500 outline-none focus:border-cyan-300 font-mono transition-all"
+              />
+              <span className="absolute right-3 top-2.5 text-xs text-gray-500">🔍</span>
+            </div>
+          </div>
+
+          {/* ======================================================== */}
+          {/* PODIUM SHOWCASE: TOP 3 OPERATIVES                        */}
+          {/* ======================================================== */}
+          {ranked.length >= 3 && !search && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-2">
+              
+              {/* #2 SILVER PODIUM */}
+              <div className="order-2 md:order-1 bg-gradient-to-b from-[#111e38]/95 to-[#0b1326]/95 border-2 border-slate-400/80 rounded-3xl p-6 shadow-[0_0_40px_rgba(148,163,184,0.3)] relative flex flex-col justify-between">
+                <div className="absolute -top-4 left-6 px-3 py-1 rounded-full bg-slate-300 text-black font-black font-orbitron text-xs tracking-widest shadow">
+                  #2 SILVER RANK
+                </div>
+                <div>
+                  <div className="text-xs text-slate-400 mt-2 font-mono">GAME ID: #{ranked[1].game_id}</div>
+                  <h3 className="text-xl font-black font-orbitron text-white mt-1">{ranked[1].group_name}</h3>
+                  <p className="text-xs text-slate-400 truncate mt-1">{(ranked[1].members || []).map(m => m.member_name).join(', ')}</p>
+                </div>
+                <div className="mt-6 pt-4 border-t border-slate-700/60 flex justify-between items-end">
+                  <div>
+                    <div className="text-[10px] text-slate-400 uppercase">Adjusted Time</div>
+                    <div className="text-2xl font-black font-orbitron text-slate-200">{formatTime(ranked[1].res.adjustedDuration)}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-[10px] text-slate-400 uppercase">Net Points</div>
+                    <div className="text-lg font-bold font-orbitron text-cyan-400">{ranked[1].res.netPoints} PTS</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* #1 GOLD CHAMPION PODIUM */}
+              <div className="order-1 md:order-2 bg-gradient-to-b from-[#251d08]/95 via-[#181305]/95 to-[#0c0a02]/95 border-2 border-yellow-400 rounded-3xl p-7 shadow-[0_0_60px_rgba(250,204,21,0.5)] relative flex flex-col justify-between scale-105 z-10">
+                <div className="absolute -top-5 left-1/2 -translate-x-1/2 px-5 py-1.5 rounded-full bg-gradient-to-r from-yellow-400 to-amber-500 text-black font-black font-orbitron text-xs tracking-[0.25em] shadow-[0_0_20px_rgba(250,204,21,0.8)] animate-pulse">
+                  ★ #1 OVERALL CHAMPION ★
+                </div>
+                <div className="text-center mt-3">
+                  <div className="text-xs text-yellow-400/80 font-mono">GAME ID: #{ranked[0].game_id}</div>
+                  <h3 className="text-2xl md:text-3xl font-black font-orbitron text-yellow-300 mt-1 drop-shadow-[0_0_15px_rgba(250,204,21,0.8)]">
+                    {ranked[0].group_name}
+                  </h3>
+                  <p className="text-xs text-gray-300 truncate mt-1">{(ranked[0].members || []).map(m => m.member_name).join(', ')}</p>
+                </div>
+                <div className="mt-6 pt-4 border-t border-yellow-500/50 flex justify-between items-end bg-black/40 p-4 rounded-2xl border border-yellow-500/30">
+                  <div className="text-left">
+                    <div className="text-[10px] text-yellow-400 uppercase font-bold tracking-wider">Mission Record Time</div>
+                    <div className="text-3xl font-black font-orbitron text-yellow-300">{formatTime(ranked[0].res.adjustedDuration)}</div>
+                    {ranked[0].res.bonus > 0 && <span className="text-[10px] text-amber-400 font-bold block">(-{ranked[0].res.bonus}s bonus applied)</span>}
+                  </div>
+                  <div className="text-right">
+                    <div className="text-[10px] text-yellow-400 uppercase font-bold tracking-wider">Net Score</div>
+                    <div className="text-2xl font-black font-orbitron text-emerald-400">{ranked[0].res.netPoints} PTS</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* #3 BRONZE PODIUM */}
+              <div className="order-3 md:order-3 bg-gradient-to-b from-[#211409]/95 to-[#130b05]/95 border-2 border-amber-600/80 rounded-3xl p-6 shadow-[0_0_40px_rgba(217,119,6,0.3)] relative flex flex-col justify-between">
+                <div className="absolute -top-4 left-6 px-3 py-1 rounded-full bg-amber-600 text-white font-black font-orbitron text-xs tracking-widest shadow">
+                  #3 BRONZE RANK
+                </div>
+                <div>
+                  <div className="text-xs text-amber-500 mt-2 font-mono">GAME ID: #{ranked[2].game_id}</div>
+                  <h3 className="text-xl font-black font-orbitron text-white mt-1">{ranked[2].group_name}</h3>
+                  <p className="text-xs text-slate-400 truncate mt-1">{(ranked[2].members || []).map(m => m.member_name).join(', ')}</p>
+                </div>
+                <div className="mt-6 pt-4 border-t border-amber-800/60 flex justify-between items-end">
+                  <div>
+                    <div className="text-[10px] text-amber-400 uppercase">Adjusted Time</div>
+                    <div className="text-2xl font-black font-orbitron text-amber-300">{formatTime(ranked[2].res.adjustedDuration)}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-[10px] text-amber-400 uppercase">Net Points</div>
+                    <div className="text-lg font-bold font-orbitron text-cyan-400">{ranked[2].res.netPoints} PTS</div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          )}
+
+          {/* ======================================================== */}
+          {/* OFFICIAL HIGH-VISIBILITY BLACKOUT TELEMETRY TABLE         */}
+          {/* ======================================================== */}
+          <div className="bg-[#070c1b]/95 border-2 border-cyan-500/50 rounded-3xl shadow-2xl overflow-hidden backdrop-blur-xl">
+            <div className="p-5 border-b border-cyan-500/30 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="p-2 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 font-black">
+                  ⚡
+                </span>
+                <div>
+                  <h3 className="font-orbitron font-black text-lg text-white tracking-widest">
+                    BLACKOUT PROTOCOL CHRONO-TELEMETRY LOG
+                  </h3>
+                  <p className="text-xs text-cyan-300">INDIVIDUAL 3 ERAS LAP READOUTS &amp; POINT DEDUCTION BALANCES</p>
+                </div>
+              </div>
+
+              <div className="text-xs text-gray-400 font-mono hidden md:block">
+                AUTO-SYNC: 2000ms // REAL-TIME
+              </div>
+            </div>
+
+            {loading ? (
+              <div className="py-24 text-center text-cyan-300 font-orbitron font-bold tracking-widest animate-pulse">
+                INITIALIZING BLACKOUT PROTOCOL TELEMETRY...
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="py-24 text-center text-gray-500 font-mono tracking-wider">
+                NO COMPLETED BLACKOUT MISSIONS LOGGED YET.
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse font-mono">
+                  <thead>
+                    <tr className="bg-black/60 border-b border-cyan-500/30 text-xs font-bold text-cyan-400 uppercase tracking-widest">
+                      <th className="p-4 text-center">RANK</th>
+                      <th className="p-4">GAME ID</th>
+                      <th className="p-4">OPERATIVE UNIT / SQUAD</th>
+                      <th className="p-4 text-center text-amber-300">ERA 1 (LAP 1)</th>
+                      <th className="p-4 text-center text-cyan-300">ERA 2 (LAP 2)</th>
+                      <th className="p-4 text-center text-purple-300">ERA 3 (LAP 3)</th>
+                      <th className="p-4 text-center text-gray-400">RAW TIME</th>
+                      <th className="p-4 text-center text-emerald-300">ADJUSTED TIME</th>
+                      <th className="p-4 text-right text-yellow-300">NET SCORE</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-800 text-sm">
+                    {filtered.map((g) => {
+                      const isGold = g.officialRank === 1;
+                      const isSilver = g.officialRank === 2;
+                      const isBronze = g.officialRank === 3;
+
+                      return (
+                        <tr 
+                          key={g.id} 
+                          className={`hover:bg-cyan-950/20 transition-colors ${
+                            isGold ? 'bg-yellow-950/20' : isSilver ? 'bg-slate-900/30' : isBronze ? 'bg-amber-950/20' : ''
+                          }`}
+                        >
+                          {/* Rank Badge */}
+                          <td className="p-4 text-center">
+                            <span className={`inline-flex items-center justify-center w-8 h-8 rounded-xl font-orbitron font-black text-xs ${
+                              isGold ? 'bg-yellow-400 text-black shadow-[0_0_15px_rgba(250,204,21,0.8)]' :
+                              isSilver ? 'bg-slate-300 text-black shadow-[0_0_15px_rgba(203,213,225,0.8)]' :
+                              isBronze ? 'bg-amber-600 text-white shadow-[0_0_15px_rgba(217,119,6,0.8)]' :
+                              'bg-gray-800 text-gray-300 border border-gray-700'
+                            }`}>
+                              #{g.officialRank}
+                            </span>
+                          </td>
+
+                          {/* Game ID */}
+                          <td className="p-4 font-bold font-mono text-cyan-400 text-xs">
+                            #{g.game_id}
+                          </td>
+
+                          {/* Team Name & Members */}
+                          <td className="p-4">
+                            <div className="font-extrabold text-white text-base font-orbitron tracking-wide">
+                              {g.group_name}
+                            </div>
+                            <div className="text-xs text-gray-400 max-w-sm truncate mt-0.5">
+                              {(g.members || []).map(m => m.member_name).join(', ')}
+                            </div>
+                          </td>
+
+                          {/* Era 1 */}
+                          <td className="p-4 text-center font-bold text-amber-300 text-xs bg-amber-950/10">
+                            {formatTime(g.res.era1Time)}
+                          </td>
+
+                          {/* Era 2 */}
+                          <td className="p-4 text-center font-bold text-cyan-300 text-xs bg-cyan-950/10">
+                            {formatTime(g.res.era2Time)}
+                          </td>
+
+                          {/* Era 3 */}
+                          <td className="p-4 text-center font-bold text-purple-300 text-xs bg-purple-950/10">
+                            {formatTime(g.res.era3Time)}
+                          </td>
+
+                          {/* Total Raw Duration */}
+                          <td className="p-4 text-center text-gray-400 text-xs">
+                            {formatTime(g.res.actualDuration)}
+                          </td>
+
+                          {/* Adjusted Final Time */}
+                          <td className="p-4 text-center">
+                            <span className="font-black font-orbitron text-emerald-400 text-base drop-shadow-[0_0_10px_rgba(16,185,129,0.5)]">
+                              {formatTime(g.res.adjustedDuration)}
+                            </span>
+                            {g.res.bonus > 0 && (
+                              <span className="text-[10px] text-amber-400 font-bold block">
+                                -{g.res.bonus}s BONUS
+                              </span>
+                            )}
+                          </td>
+
+                          {/* Net Points */}
+                          <td className="p-4 text-right">
+                            <div className="font-black font-orbitron text-yellow-300 text-base">
+                              {g.res.netPoints} PTS
+                            </div>
+                            <div className="text-[10px] text-gray-400">
+                              <span>{g.res.earned} earned</span>
+                              {g.res.totalDeductions > 0 && (
+                                <span className="text-rose-400 font-bold ml-1">
+                                  (-{g.res.totalDeductions} pen)
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          {/* Footer note */}
+          <footer className="text-center text-xs text-gray-500 font-mono tracking-widest pt-4">
+            ELECTRONIC DESIGN CLUB (EDC) // BLACKOUT PROTOCOL CHRONO-RADAR // SYMBITECH SIT PUNE
+          </footer>
+
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<LeaderboardApp />);
+  </script>
+</body>
+</html>

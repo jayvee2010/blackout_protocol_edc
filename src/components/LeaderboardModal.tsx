@@ -4,7 +4,6 @@ import { fetchLeaderboard, isSupabaseConnected, isGoogleSheetsConnected } from '
 import type { LeaderboardEntry } from '../lib/database';
 import { soundFx } from '../lib/audio';
 import { 
-  Trophy, 
   Clock, 
   X, 
   RefreshCw, 
@@ -36,59 +35,101 @@ export const LeaderboardModal: React.FC<{
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md font-mono select-none">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl font-mono select-none">
       <motion.div
-        initial={{ opacity: 0, scale: 0.92 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.92 }}
-        className="relative w-full max-w-4xl bg-[#0f172a] border-2 border-yellow-400/80 rounded-2xl p-6 md:p-8 shadow-[0_0_60px_rgba(250,204,21,0.35)] text-white"
+        initial={{ opacity: 0, scale: 0.94, y: 15 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.94, y: 15 }}
+        className="relative w-full max-w-4xl bg-[#070d1e]/95 border-2 border-cyan-400 rounded-3xl p-6 md:p-8 shadow-[0_0_80px_rgba(6,182,212,0.45)] text-white overflow-hidden"
       >
-        {/* Header */}
-        <div className="flex justify-between items-start border-b border-yellow-500/40 pb-4 mb-6">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-yellow-500/20 border border-yellow-400 rounded-xl text-yellow-400">
-              <Trophy size={28} />
+        {/* Top Cyber Accents */}
+        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-cyan-400 to-purple-500"></div>
+
+        {/* Header with EDC Logo */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-cyan-500/30 pb-5 mb-6 gap-4">
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <img 
+                src="/edc-logo.jpg" 
+                alt="EDC Logo" 
+                className="w-16 h-16 rounded-full border-2 border-cyan-400 bg-black p-0.5 object-cover shadow-[0_0_20px_rgba(6,182,212,0.6)]"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = 'edc-logo.jpg';
+                }}
+              />
+              <span className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-black animate-pulse"></span>
             </div>
+
             <div>
-              <h2 className="text-xl md:text-2xl font-bold tracking-[0.2em] text-yellow-300">
-                MISSION LEADERBOARD // WINNERS BOARD
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded bg-cyan-950 border border-cyan-400 text-cyan-300 font-bold text-[10px] tracking-widest uppercase">
+                  BLACKOUT PROTOCOL
+                </span>
+                <span className="px-2 py-0.5 rounded bg-amber-950 border border-amber-500 text-amber-300 font-bold text-[10px] tracking-wider uppercase">
+                  EDC • SIT PUNE
+                </span>
+              </div>
+              
+              <h2 className="text-xl md:text-2xl font-black tracking-[0.15em] text-white mt-1 drop-shadow-[0_0_15px_rgba(255,255,255,0.7)]">
+                LIVE MISSION LEADERBOARD
               </h2>
-              <div className="flex items-center gap-3 text-xs text-gray-300 mt-1">
-                <span>RANKED BY LEAST TIME TAKEN TO COMPLETE RECOVERY</span>
-                <span className="flex items-center gap-1 text-[11px] px-2 py-0.5 rounded border border-cyan-400/50 bg-cyan-950/60 text-cyan-300">
+
+              <div className="flex items-center gap-3 text-xs text-cyan-300 mt-1">
+                <span>RANKED BY FASTEST RECOVERY TIME</span>
+                <span className="text-slate-600">|</span>
+                <span className="flex items-center gap-1 text-[11px] px-2 py-0.5 rounded border border-cyan-400/50 bg-cyan-950/60 text-cyan-300 font-bold">
                   <Database size={11} />
                   {isGoogleSheetsConnected ? 'GOOGLE SHEETS CLOUD' : isSupabaseConnected ? 'POSTGRESQL CLOUD' : 'LOCAL PERSISTENT STORE'}
                 </span>
-                <button 
-                  onClick={loadData}
-                  className="p-1 hover:text-yellow-300 text-gray-400 rounded transition-colors"
-                  title="Refresh Leaderboard"
-                >
-                  <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
-                </button>
               </div>
             </div>
           </div>
 
-          <button
-            onClick={() => {
-              soundFx.playClick();
-              onClose();
-            }}
-            className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
-          >
-            <X size={20} />
-          </button>
+          <div className="flex items-center gap-3 self-end sm:self-center">
+            <button
+              onClick={() => {
+                soundFx.playClick();
+                loadData();
+              }}
+              className="p-2 hover:text-cyan-300 text-gray-400 rounded-xl hover:bg-slate-800 transition-colors"
+              title="Refresh Leaderboard"
+            >
+              <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+            </button>
+
+            <button
+              onClick={() => {
+                soundFx.playClick();
+                onClose();
+              }}
+              className="p-2 text-gray-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors"
+            >
+              <X size={20} />
+            </button>
+          </div>
+        </div>
+
+        {/* 3 Eras mini badges */}
+        <div className="grid grid-cols-3 gap-2 mb-4 text-[10px] text-center font-bold">
+          <div className="p-2 rounded-xl bg-amber-950/30 border border-amber-500/40 text-amber-300">
+            ERA 1: RETRO / ANCIENT
+          </div>
+          <div className="p-2 rounded-xl bg-cyan-950/30 border border-cyan-500/40 text-cyan-300">
+            ERA 2: INDUSTRIAL / MODERN
+          </div>
+          <div className="p-2 rounded-xl bg-purple-950/30 border border-purple-500/40 text-purple-300">
+            ERA 3: CYBER / FUTURE
+          </div>
         </div>
 
         {/* Table Content */}
-        <div className="max-h-[60vh] overflow-y-auto pr-1">
+        <div className="max-h-[55vh] overflow-y-auto pr-1 space-y-3 scrollbar-thin">
           {loading ? (
-            <div className="py-12 text-center text-yellow-300 font-bold tracking-widest animate-pulse">
-              SYNCING TELEMETRY FROM DATABASE...
+            <div className="py-16 text-center text-cyan-300 font-bold tracking-widest animate-pulse">
+              SYNCING BLACKOUT TELEMETRY FROM CLOUD DATABASE...
             </div>
           ) : entries.length === 0 ? (
-            <div className="py-12 text-center text-gray-400 tracking-wider">
+            <div className="py-16 text-center text-gray-500 tracking-wider">
               NO TEAMS HAVE COMPLETED THE RECOVERY MISSION YET.
             </div>
           ) : (
@@ -101,38 +142,38 @@ export const LeaderboardModal: React.FC<{
                 return (
                   <div
                     key={entry.team_code + index}
-                    className={`flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 rounded-xl border-2 transition-all ${
+                    className={`flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 rounded-2xl border-2 transition-all ${
                       isWinner
-                        ? 'bg-yellow-950/40 border-yellow-400 shadow-[0_0_20px_rgba(250,204,21,0.25)]'
+                        ? 'bg-gradient-to-r from-[#201805] to-[#120e03] border-yellow-400 shadow-[0_0_30px_rgba(250,204,21,0.35)]'
                         : isSecond
-                        ? 'bg-slate-800/80 border-slate-300'
+                        ? 'bg-gradient-to-r from-[#141b2b] to-[#0c111c] border-slate-400 shadow-[0_0_20px_rgba(148,163,184,0.2)]'
                         : isThird
-                        ? 'bg-amber-950/30 border-amber-600'
-                        : 'bg-black/60 border-slate-700'
+                        ? 'bg-gradient-to-r from-[#1f1105] to-[#100902] border-amber-600 shadow-[0_0_20px_rgba(217,119,6,0.2)]'
+                        : 'bg-black/60 border-cyan-900/60 hover:border-cyan-700'
                     }`}
                   >
                     {/* Left: Rank & Team */}
                     <div className="flex items-center gap-4">
-                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center font-bold text-sm ${
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm ${
                         isWinner
-                          ? 'bg-yellow-400 text-black'
+                          ? 'bg-yellow-400 text-black shadow-[0_0_15px_rgba(250,204,21,0.8)]'
                           : isSecond
-                          ? 'bg-slate-300 text-black'
+                          ? 'bg-slate-300 text-black shadow-[0_0_15px_rgba(203,213,225,0.8)]'
                           : isThird
-                          ? 'bg-amber-600 text-white'
-                          : 'bg-slate-800 text-gray-300'
+                          ? 'bg-amber-600 text-white shadow-[0_0_15px_rgba(217,119,6,0.8)]'
+                          : 'bg-slate-800 text-gray-300 border border-slate-700'
                       }`}>
-                        {index + 1}
+                        #{index + 1}
                       </div>
 
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-base tracking-widest text-white">
+                          <span className="font-black text-base tracking-widest text-white">
                             {entry.team_code}
                           </span>
                           {isWinner && (
-                            <span className="px-2 py-0.5 bg-yellow-400 text-black text-[10px] font-bold rounded">
-                              WINNER 🏆
+                            <span className="px-2 py-0.5 bg-yellow-400 text-black text-[10px] font-black rounded-full shadow">
+                              CHAMPION 🏆
                             </span>
                           )}
                         </div>
@@ -143,10 +184,10 @@ export const LeaderboardModal: React.FC<{
                     </div>
 
                     {/* Right: Time Taken & Status */}
-                    <div className="flex items-center gap-6 mt-3 sm:mt-0">
-                      <div className="flex items-center gap-2 bg-black/60 px-3.5 py-1.5 rounded-lg border border-gray-700">
-                        <Clock size={16} className="text-yellow-400" />
-                        <span className="text-sm font-bold text-yellow-300 tracking-widest">
+                    <div className="flex items-center gap-4 sm:gap-6 mt-3 sm:mt-0">
+                      <div className="flex items-center gap-2 bg-black/80 px-4 py-2 rounded-xl border border-cyan-500/40">
+                        <Clock size={16} className={isWinner ? 'text-yellow-400' : 'text-cyan-400'} />
+                        <span className={`text-base font-black tracking-widest ${isWinner ? 'text-yellow-300' : 'text-cyan-300'}`}>
                           {entry.formatted_time}
                         </span>
                         <span className="text-[10px] text-gray-400">
@@ -154,9 +195,9 @@ export const LeaderboardModal: React.FC<{
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-400">
-                        <CheckCircle2 size={16} />
-                        <span>3/3 SOLVED</span>
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-400 bg-emerald-950/60 px-3 py-1.5 rounded-xl border border-emerald-500/40">
+                        <CheckCircle2 size={15} />
+                        <span>VERIFIED ✓</span>
                       </div>
                     </div>
                   </div>
@@ -167,32 +208,21 @@ export const LeaderboardModal: React.FC<{
         </div>
 
         {/* Footer Actions */}
-        <div className="flex justify-between items-center border-t border-gray-700 pt-4 mt-6 text-xs text-gray-400">
+        <div className="flex justify-between items-center border-t border-cyan-500/30 pt-4 mt-6 text-xs text-gray-400">
           <div className="flex items-center gap-2">
-            <Users size={14} className="text-yellow-400" />
-            <span>TOTAL TEAMS RECORDED: {entries.length}</span>
+            <Users size={14} className="text-cyan-400" />
+            <span>TOTAL VERIFIED MISSIONS: {entries.length}</span>
           </div>
 
           <div className="flex items-center gap-3">
             <button
               onClick={() => {
                 soundFx.playClick();
-                loadData();
-              }}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg text-white font-bold transition-all"
-            >
-              <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
-              <span>REFRESH</span>
-            </button>
-
-            <button
-              onClick={() => {
-                soundFx.playClick();
                 onClose();
               }}
-              className="px-4 py-1.5 bg-yellow-500 hover:bg-yellow-400 text-black font-bold rounded-lg transition-all"
+              className="px-6 py-2 bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs rounded-xl shadow-[0_0_20px_rgba(6,182,212,0.6)] transition-all"
             >
-              CLOSE
+              DISMISS
             </button>
           </div>
         </div>
