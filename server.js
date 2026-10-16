@@ -1,3 +1,6 @@
+// Live leaderboard server. Run:  node server.js   (needs Node 14+, no npm install)
+// Admin (you, on this laptop):  http://localhost:3000/admin
+// Players (same Wi-Fi):         http://<laptop-ip>:3000/   <- this is what the QR code opens
 const http = require('http'), fs = require('fs'), path = require('path'), os = require('os');
 const PORT = process.env.PORT || 3000;
 const DB = path.join(__dirname, 'state.json');
@@ -43,11 +46,11 @@ http.createServer((req, res) => {
   // Health check endpoint
   if (url === '/api/health') return send(200, 'application/json', JSON.stringify({ status: 'ok', time: Date.now() }));
 
-  // Players poll this.
+  // Players poll this. "now" lets phones sync their clock to the laptop's.
   if (url === '/api/state' && req.method === 'GET')
     return send(200, 'application/json', JSON.stringify({ ...state, now: Date.now() }));
 
-  // Admin writes state
+  // Only the laptop running the server (the admin) may write.
   if (url === '/api/state' && req.method === 'POST') {
     if (!isLocal(req)) return send(403, 'text/plain', 'Admin only');
     let body = '';
@@ -63,30 +66,13 @@ http.createServer((req, res) => {
     return;
   }
 
-  // EDC Logo asset endpoint
   if (url === '/edc-logo.jpg' || url === '/logo.jpg' || url === '/logo.png' || url === '/logo.jpeg') {
     return fs.readFile(path.join(__dirname, 'edc-logo.jpg'), (err, data) =>
       err ? send(404, 'text/plain', 'Logo not found') : send(200, 'image/jpeg', data));
   }
-
-  // SSE Stream endpoint
-  if (url === '/api/stream') {
-    res.writeHead(200, {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
-      'Access-Control-Allow-Origin': '*'
-    });
-    res.write('data: ' + JSON.stringify(state) + '\n\n');
-    const interval = setInterval(() => {
-      res.write('data: ' + JSON.stringify(state) + '\n\n');
-    }, 1500);
-    req.on('close', () => clearInterval(interval));
-    return;
-  }
-  
   if (url === '/api/info') return send(200, 'application/json', JSON.stringify({ urls: lanUrls() }));
   if (url === '/admin' || url === '/admin.html') return isLocal(req) ? sendFile('admin.html') : send(403, 'text/plain', 'Admin only');
+  if (url === '/panel' || url === '/AdministratorPanel.html') return isLocal(req) ? sendFile('AdministratorPanel.html') : send(403, 'text/plain', 'Admin only');
   if (url === '/' || url === '/index.html' || url === '/leaderboard' || url === '/leaderboard.html') return sendFile('leaderboard.html');
   send(404, 'text/plain', 'Not found');
 }).listen(PORT, '0.0.0.0', () => {
