@@ -310,8 +310,6 @@
 
     </main>
 
-
-<div id="conn" style="position:fixed;right:12px;bottom:10px;z-index:50" class="text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded border border-obsidian-600 bg-obsidian-900/90 text-metal-silverDark">Connecting...</div>
 <script>
 (function(){
   const $=id=>document.getElementById(id);
@@ -358,11 +356,8 @@
     $('rows').innerHTML=rows.length?rows.join(''):'<div class="py-10 text-center text-xs text-metal-silverDark uppercase tracking-widest">'+(r.length?'':'No finished teams yet')+'</div>';
   }
 
-  function setConn(ok){ const c=$('conn'); c.textContent=ok?'\u25CF Live':'Reconnecting...'; c.style.color=ok?'#34d399':'#FF2A2A'; }
   const es=new EventSource('/api/stream');
-  es.onopen=()=>setConn(true);
-  es.onerror=()=>setConn(false);
-  es.onmessage=ev=>{ try{ state=JSON.parse(ev.data); render(); setConn(true);}catch(e){} };
+  es.onmessage=ev=>{ try{ state=JSON.parse(ev.data); render(); }catch(e){} };
   render();
 })();
 </script>
