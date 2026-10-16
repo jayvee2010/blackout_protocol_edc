@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/", "destination": "/leaderboard.html" },
+    { "source": "/leaderboard", "destination": "/leaderboard.html" },
+    { "source": "/admin", "destination": "/admin.html" },
+    { "source": "/panel", "destination": "/AdministratorPanel.html" },
+    { "source": "/logo.jpeg", "destination": "/logo.jpeg" },
+    { "source": "/edc-logo.jpg", "destination": "/edc-logo.jpg" }
+  ]
+}
