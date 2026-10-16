@@ -117,12 +117,41 @@
           if (localGroups) setGroups(JSON.parse(localGroups));
           if (localSess) setSessions(JSON.parse(localSess));
           if (localSets) setSettings(JSON.parse(localSets));
+
+          if (localGroups || localSess) {
+            pushLive(
+              localGroups ? JSON.parse(localGroups) : [],
+              localSess ? JSON.parse(localSess) : {},
+              localSets ? { ...DEFAULT_SETTINGS, ...JSON.parse(localSets) } : DEFAULT_SETTINGS
+            );
+          } else {
+            fetch('/api/state').then(r => r.json()).then(d => {
+              if (d.groups && d.groups.length) {
+                setGroups(d.groups);
+                setSessions(d.sessions || {});
+                if (d.settings) setSettings({ ...DEFAULT_SETTINGS, ...d.settings });
+              }
+            }).catch(() => {});
+          }
         } catch (err) {
           console.warn("Storage load error:", err);
         }
       }, []);
 
+      const pushLive = (g, s, st) => {
+        try {
+          fetch('/api/state', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ groups: g, sessions: s, settings: st })
+          }).catch(() => {});
+        } catch(e){}
+      };
+
       const saveToStore = (newGroups, newSessions, newSettings) => {
+        const g = newGroups !== undefined ? newGroups : groups;
+        const s = newSessions !== undefined ? newSessions : sessions;
+        const st = newSettings !== undefined ? newSettings : settings;
         if (newGroups !== undefined) {
           setGroups(newGroups);
           localStorage.setItem('edc_event_groups', JSON.stringify(newGroups));
@@ -135,6 +164,7 @@
           setSettings(newSettings);
           localStorage.setItem('edc_event_settings', JSON.stringify(newSettings));
         }
+        pushLive(g, s, st);
       };
 
       // Calculate ranks: Lowest adjusted time first, then highest remaining points

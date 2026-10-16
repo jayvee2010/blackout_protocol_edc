@@ -55,8 +55,8 @@
     };
 
     // Live-leaderboard server
-    const SERVER = (location.protocol.startsWith('http') && (location.port === '3000' || !location.port))
-      ? (location.origin === 'null' ? 'http://localhost:3000' : location.origin)
+    const SERVER = (location.protocol.startsWith('http') && location.origin && location.origin !== 'null')
+      ? location.origin
       : 'http://localhost:3000';
 
     let setServerConnectedGlobal = null;

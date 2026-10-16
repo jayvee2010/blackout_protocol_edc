@@ -320,14 +320,22 @@
 
   function ranked(){
     const st=state.settings||{};
-    const list=(state.groups||[]).filter(g=>(state.sessions[g.id]||{}).status==='Completed').map(g=>{
-      const s=state.sessions[g.id];
-      const actual=Number(s.actual_duration)||0;
+    const list=(state.groups||[]).filter(g=>{
+      const s=state.sessions[g.id]||{};
+      return s.status==='Completed' || g.status==='Completed' || s.actual_duration > 0 || (Number(s.score1)||0)+(Number(s.score2)||0)+(Number(s.score3)||0) > 0;
+    }).map(g=>{
+      const s=state.sessions[g.id]||{};
+      const era1=Number(s.era1_duration)||0;
+      const era2=Number(s.era2_duration)||0;
+      const era3=Number(s.era3_duration)||0;
+      const actual=Number(s.actual_duration)||(era1+era2+era3)||0;
       const bonus=s.reward_type==='Extra Time'?Number(st.extratime_bonus)||0:0;
       const adj=Math.max(0,actual-bonus);
       const earned=(Number(s.score1)||0)+(Number(s.score2)||0)+(Number(s.score3)||0);
       const cost=s.reward_cost_snapshot!==undefined?Number(s.reward_cost_snapshot):(s.reward_type==='Extra Time'?Number(st.extratime_cost):s.reward_type==='Hint'?Number(st.hint_cost):0);
-      return {g,adj,pts:Math.max(0,earned-(cost||0))};
+      const deductions=Array.isArray(s.deductions)?s.deductions:[];
+      const totalDed=deductions.reduce((sum,d)=>sum+(Number(d.amount)||0),0);
+      return {g,adj,pts:Math.max(0,earned-(cost||0)-totalDed)};
     });
     list.sort((a,b)=>a.adj!==b.adj?a.adj-b.adj:b.pts-a.pts);
     let r=1;
@@ -356,9 +364,50 @@
     $('rows').innerHTML=rows.length?rows.join(''):'<div class="py-10 text-center text-xs text-metal-silverDark uppercase tracking-widest">'+(r.length?'':'No finished teams yet')+'</div>';
   }
 
-  const es=new EventSource('/api/stream');
-  es.onmessage=ev=>{ try{ state=JSON.parse(ev.data); render(); }catch(e){} };
+  function loadLocalState(){
+    try {
+      const g = localStorage.getItem('edc_event_groups');
+      const s = localStorage.getItem('edc_event_sessions');
+      const st = localStorage.getItem('edc_event_settings');
+      if(g) state.groups = JSON.parse(g);
+      if(s) state.sessions = JSON.parse(s);
+      if(st) state.settings = JSON.parse(st);
+    } catch(e){}
+  }
+
+  loadLocalState();
   render();
+
+  window.addEventListener('storage', (e) => {
+    if(e.key && e.key.startsWith('edc_event_')){
+      loadLocalState();
+      render();
+    }
+  });
+
+  const pollState = () => {
+    fetch('/api/state')
+      .then(r => r.json())
+      .then(d => {
+        if(d && (d.groups || d.sessions)){
+          state = { groups: d.groups||[], sessions: d.sessions||{}, settings: d.settings||{} };
+          render();
+        }
+      })
+      .catch(() => {});
+  };
+  pollState();
+  setInterval(pollState, 2000);
+
+  try {
+    const es = new EventSource('/api/stream');
+    es.onmessage = ev => {
+      try {
+        state = JSON.parse(ev.data);
+        render();
+      } catch(e){}
+    };
+  } catch(e){}
 })();
 </script>
 </body>
